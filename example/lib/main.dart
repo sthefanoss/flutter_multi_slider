@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_multi_slider/multi_slider.dart';
+import 'package:flutter_multi_slider/flutter_multi_slider.dart';
 
 void main() => runApp(MyApp());
 
