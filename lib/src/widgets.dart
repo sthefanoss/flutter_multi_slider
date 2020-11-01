@@ -5,32 +5,46 @@ import 'painters.dart';
 class MultiSlider extends StatefulWidget {
   final double max;
   final double min;
-  final double range;
-  final double minimumDistancePercentage;
-  final List<double> values;
-  final double widthOffset;
-  final void Function(List<double>) onChanged;
+  final double _range;
+  final double height;
+  final double horizontalPadding;
 
-  MultiSlider(
-      {this.max,
-      this.min,
-      this.minimumDistancePercentage = 5,
-      this.values,
-      this.onChanged,
-      this.widthOffset = 20.0})
-      : range = max - min;
+  final Color activeColor;
+  final Color inactiveColor;
+
+  final List<double> values;
+  final ValueChanged<List<double>> onChanged;
+  final ValueChanged<List<double>> onChangeStart;
+  final ValueChanged<List<double>> onChangeEnd;
+
+  const MultiSlider({
+    @required this.values,
+    this.onChanged,
+    this.onChangeStart,
+    this.onChangeEnd,
+    this.max = 1.0,
+    this.min = 0.0,
+    this.activeColor,
+    this.inactiveColor,
+    this.horizontalPadding = 20.0,
+    this.height = 45,
+  }) : _range = max - min;
 
   @override
   _MultiSliderState createState() => _MultiSliderState();
 }
 
 class _MultiSliderState extends State<MultiSlider> {
-  final double _maxHeight = 50.0;
   double _maxWidth;
   int selectedInputIndex;
 
   @override
   Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    SliderThemeData sliderTheme = SliderTheme.of(context);
+
+    final bool isDisabled = widget.onChanged == null;
+
     return LayoutBuilder(
       builder: (context, BoxConstraints constraints) {
         _maxWidth = constraints.maxWidth;
@@ -38,18 +52,31 @@ class _MultiSliderState extends State<MultiSlider> {
           child: Container(
             constraints: constraints,
             width: double.infinity,
-            height: _maxHeight,
+            height: widget.height,
             child: CustomPaint(
               painter: MultiSliderPainter(
+                isDisabled: isDisabled,
+                activeTrackColor: widget.activeColor ??
+                    sliderTheme.activeTrackColor ??
+                    theme.colorScheme.primary,
+                inactiveTrackColor: widget.inactiveColor ??
+                    sliderTheme.inactiveTrackColor ??
+                    theme.colorScheme.primary.withOpacity(0.24),
+                disabledActiveTrackColor:
+                    sliderTheme.disabledActiveTrackColor ??
+                        theme.colorScheme.onSurface.withOpacity(0.40),
+                disabledInactiveTrackColor:
+                    sliderTheme.disabledInactiveTrackColor ??
+                        theme.colorScheme.onSurface.withOpacity(0.12),
                 selectedInputIndex: selectedInputIndex,
                 values: widget.values.map(convertValueToPixelPosition).toList(),
-                widthOffset: widget.widthOffset,
+                widthOffset: widget.horizontalPadding,
               ),
             ),
           ),
-          onPanStart: selectInputIndex,
-          onPanUpdate: updateInputValue,
-          onPanEnd: deselectInputIndex,
+          onPanStart: isDisabled ? null : selectInputIndex,
+          onPanUpdate: isDisabled ? null : updateInputValue,
+          onPanEnd: isDisabled ? null : deselectInputIndex,
         );
       },
     );
@@ -57,15 +84,15 @@ class _MultiSliderState extends State<MultiSlider> {
 
   double convertValueToPixelPosition(double value) {
     return (value - widget.min) *
-            (_maxWidth - 2 * widget.widthOffset) /
-            (widget.range) +
-        widget.widthOffset;
+            (_maxWidth - 2 * widget.horizontalPadding) /
+            (widget._range) +
+        widget.horizontalPadding;
   }
 
   double convertPixelPositionToValue(double pixelPosition) {
-    return (pixelPosition - widget.widthOffset) *
-            (widget.range) /
-            (_maxWidth - 2 * widget.widthOffset) +
+    return (pixelPosition - widget.horizontalPadding) *
+            (widget._range) /
+            (_maxWidth - 2 * widget.horizontalPadding) +
         widget.min;
   }
 
@@ -74,10 +101,10 @@ class _MultiSliderState extends State<MultiSlider> {
         convertPixelPositionToValue(details.localPosition.dx);
     double nearestValue = findNearestValue(convertedPosition);
 
-    print(widget.widthOffset / widget.range);
+    print(widget.horizontalPadding / widget._range);
 
     if ((convertedPosition - nearestValue).abs() <
-        widget.widthOffset / widget.range) {
+        widget.horizontalPadding / widget._range) {
       setState(() {
         selectedInputIndex = widget.values.indexOf(nearestValue);
       });
@@ -103,15 +130,13 @@ class _MultiSliderState extends State<MultiSlider> {
   double calculateInnerBound() {
     return selectedInputIndex == 0
         ? widget.min
-        : (widget.values[selectedInputIndex - 1] +
-            widget.range * widget.minimumDistancePercentage / 100);
+        : widget.values[selectedInputIndex - 1];
   }
 
   double calculateOuterBound() {
     return selectedInputIndex == widget.values.length - 1
         ? widget.max
-        : (widget.values[selectedInputIndex + 1] -
-            widget.range * widget.minimumDistancePercentage / 100);
+        : widget.values[selectedInputIndex + 1];
   }
 
   void deselectInputIndex(DragEndDetails details) {

@@ -4,30 +4,60 @@ class MultiSliderPainter extends CustomPainter {
   final List<double> values;
   final int selectedInputIndex;
   final double widthOffset;
-  const MultiSliderPainter(
-      {this.values, this.selectedInputIndex, this.widthOffset});
+
+  final Paint activeTrackColorPaint;
+  final Paint inactiveTrackColorPaint;
+
+  MultiSliderPainter({
+    bool isDisabled,
+    Color activeTrackColor,
+    Color inactiveTrackColor,
+    Color disabledActiveTrackColor,
+    Color disabledInactiveTrackColor,
+    this.values,
+    this.selectedInputIndex,
+    this.widthOffset,
+  })  : activeTrackColorPaint = _paintFromColor(
+          isDisabled ? disabledActiveTrackColor : activeTrackColor,
+          true,
+        ),
+        inactiveTrackColorPaint = _paintFromColor(
+          isDisabled ? disabledInactiveTrackColor : inactiveTrackColor,
+        );
 
   @override
   void paint(Canvas canvas, Size size) {
-    var paint = Paint()
-      ..style = PaintingStyle.fill
-      ..color = Colors.blue
-      ..isAntiAlias = true;
+    final double halfHeight = size.height / 2;
 
-    var selectedPaint = Paint()
-      ..style = PaintingStyle.fill
-      ..color = Colors.red
-      ..isAntiAlias = true;
+    canvas.drawLine(Offset(widthOffset, halfHeight),
+        Offset(values.first, halfHeight), inactiveTrackColorPaint);
 
-    canvas.drawLine(Offset(widthOffset, size.height / 2),
-        Offset(size.width - widthOffset, size.height / 2), paint);
+    canvas.drawLine(Offset(values.first, halfHeight),
+        Offset(values.last, halfHeight), activeTrackColorPaint);
+
+    canvas.drawLine(Offset(values.last, halfHeight),
+        Offset(size.width - widthOffset, halfHeight), inactiveTrackColorPaint);
 
     for (int i = 0; i < values.length; i++) {
-      canvas.drawCircle(Offset(values[i], size.height / 2), 10,
-          i == selectedInputIndex ? selectedPaint : paint);
+      canvas.drawCircle(
+          Offset(values[i], halfHeight), 10, _paintFromColor(Colors.white));
+      canvas.drawCircle(
+          Offset(values[i], halfHeight), 10, activeTrackColorPaint);
     }
+
+    if (selectedInputIndex != null)
+      canvas.drawCircle(Offset(values[selectedInputIndex], halfHeight), 22.5,
+          inactiveTrackColorPaint);
   }
 
   @override
   bool shouldRepaint(CustomPainter oldDelegate) => true;
+
+  static Paint _paintFromColor(Color color, [bool active = false]) {
+    return Paint()
+      ..style = PaintingStyle.fill
+      ..color = color
+      ..strokeWidth = active ? 6 : 4
+      ..isAntiAlias = true;
+  }
 }

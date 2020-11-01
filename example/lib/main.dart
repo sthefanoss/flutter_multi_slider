@@ -17,10 +17,9 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  List<double> values1 = [1];
-  List<double> values2 = [1, 2];
-  List<double> values3 = [1, 2, 3];
-  List<double> values4 = [1, 2, 3, 4];
+  List<double> values1 = [1 / 2];
+  List<double> values2 = [1 / 3, 2 / 3];
+  List<double> values3 = [1 / 4, 2 / 4, 3 / 4];
 
   @override
   Widget build(BuildContext context) {
@@ -30,41 +29,16 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Column(
         children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 96),
-            child: MultiSlider(
-              values: values1,
-              min: 0,
-              max: 5,
-              onChanged: (values) => setState(() => values1 = values),
-            ),
+          MultiSlider(
+            values: values1,
+            onChanged: (values) => setState(() => values1 = values),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 64),
-            child: MultiSlider(
-              values: values2,
-              min: 0,
-              max: 5,
-              onChanged: (values) => setState(() => values2 = values),
-            ),
+          MultiSlider(
+            values: values2,
+            onChanged: (values) => setState(() => values2 = values),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
-            child: MultiSlider(
-              values: values3,
-              min: 0,
-              max: 5,
-              onChanged: (values) => setState(() => values3 = values),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: MultiSlider(
-              values: values4,
-              min: 0,
-              max: 5,
-              onChanged: (values) => setState(() => values4 = values),
-            ),
+          MultiSlider(
+            values: values3,
           ),
         ],
       ), // This trailing comma makes auto-formatting nicer for build methods.
