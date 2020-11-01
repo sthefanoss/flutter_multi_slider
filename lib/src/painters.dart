@@ -6,6 +6,7 @@ class MultiSliderPainter extends CustomPainter {
   final double horizontalPadding;
 
   final Paint activeTrackColorPaint;
+  final Paint bigCircleColorPaint;
   final Paint inactiveTrackColorPaint;
 
   MultiSliderPainter({
@@ -23,6 +24,9 @@ class MultiSliderPainter extends CustomPainter {
         ),
         inactiveTrackColorPaint = _paintFromColor(
           isDisabled ? disabledInactiveTrackColor : inactiveTrackColor,
+        ),
+        bigCircleColorPaint = _paintFromColor(
+          activeTrackColor.withOpacity(0.20),
         );
 
   @override
@@ -45,11 +49,11 @@ class MultiSliderPainter extends CustomPainter {
           Offset(values[i], halfHeight), 10, _paintFromColor(Colors.white));
       canvas.drawCircle(
           Offset(values[i], halfHeight), 10, activeTrackColorPaint);
-    }
 
-    if (selectedInputIndex != null)
-      canvas.drawCircle(Offset(values[selectedInputIndex], halfHeight), 22.5,
-          inactiveTrackColorPaint);
+      if (selectedInputIndex != null)
+        canvas.drawCircle(Offset(values[selectedInputIndex], halfHeight), 22.5,
+            bigCircleColorPaint);
+    }
   }
 
   @override

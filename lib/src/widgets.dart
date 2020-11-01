@@ -9,23 +9,21 @@ class MultiSlider extends StatefulWidget {
   final double height;
   final double horizontalPadding;
 
-  final Color activeColor;
-  final Color inactiveColor;
+  final Color color;
 
   final List<double> values;
   final ValueChanged<List<double>> onChanged;
   final ValueChanged<List<double>> onChangeStart;
   final ValueChanged<List<double>> onChangeEnd;
 
-  const MultiSlider({
+  MultiSlider({
     @required this.values,
     this.onChanged,
     this.onChangeStart,
     this.onChangeEnd,
     this.max = 1.0,
     this.min = 0.0,
-    this.activeColor,
-    this.inactiveColor,
+    this.color,
     this.horizontalPadding = 20.0,
     this.height = 45,
   }) : _range = max - min {
@@ -60,8 +58,8 @@ class _MultiSliderState extends State<MultiSlider> {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    SliderThemeData sliderTheme = SliderTheme.of(context);
+    final theme = Theme.of(context);
+    final sliderTheme = SliderTheme.of(context);
 
     final bool isDisabled = widget.onChanged == null;
 
@@ -76,10 +74,10 @@ class _MultiSliderState extends State<MultiSlider> {
             child: CustomPaint(
               painter: MultiSliderPainter(
                 isDisabled: isDisabled,
-                activeTrackColor: widget.activeColor ??
+                activeTrackColor: widget.color ??
                     sliderTheme.activeTrackColor ??
                     theme.colorScheme.primary,
-                inactiveTrackColor: widget.inactiveColor ??
+                inactiveTrackColor: widget.color?.withOpacity(0.24) ??
                     sliderTheme.inactiveTrackColor ??
                     theme.colorScheme.primary.withOpacity(0.24),
                 disabledActiveTrackColor:

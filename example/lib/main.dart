@@ -35,6 +35,7 @@ class _MyHomePageState extends State<MyHomePage> {
             onChanged: (values) => setState(() => values1 = values),
           ),
           MultiSlider(
+            color: Colors.green,
             values: values2,
             onChanged: (values) => setState(() => values2 = values),
             onChangeStart: (values) {
@@ -52,6 +53,7 @@ class _MyHomePageState extends State<MyHomePage> {
           MultiSlider(
             values: values4,
             onChanged: (values) => setState(() => values4 = values),
+            color: Colors.red,
           ),
         ],
       ), // This trailing comma makes auto-formatting nicer for build methods.
