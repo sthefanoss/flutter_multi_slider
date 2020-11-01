@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'painters.dart';
 
 class MultiSlider extends StatefulWidget {
@@ -25,26 +26,32 @@ class MultiSlider extends StatefulWidget {
 
 class _MultiSliderState extends State<MultiSlider> {
   final double _maxHeight = 50.0;
-  double get _maxWidth => MediaQuery.of(context).size.width;
+  double _maxWidth;
   int selectedInputIndex;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      child: Container(
-        width: _maxWidth,
-        height: _maxHeight,
-        child: CustomPaint(
-          painter: MultiSliderPainter(
-            selectedInputIndex: selectedInputIndex,
-            values: widget.values.map(convertValueToPixelPosition).toList(),
-            widthOffset: widget.widthOffset,
+    return LayoutBuilder(
+      builder: (context, BoxConstraints constraints) {
+        _maxWidth = constraints.maxWidth;
+        return GestureDetector(
+          child: Container(
+            constraints: constraints,
+            width: double.infinity,
+            height: _maxHeight,
+            child: CustomPaint(
+              painter: MultiSliderPainter(
+                selectedInputIndex: selectedInputIndex,
+                values: widget.values.map(convertValueToPixelPosition).toList(),
+                widthOffset: widget.widthOffset,
+              ),
+            ),
           ),
-        ),
-      ),
-      onPanStart: selectInputIndex,
-      onPanUpdate: updateInputValue,
-      onPanEnd: deselectInputIndex,
+          onPanStart: selectInputIndex,
+          onPanUpdate: updateInputValue,
+          onPanEnd: deselectInputIndex,
+        );
+      },
     );
   }
 
