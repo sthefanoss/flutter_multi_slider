@@ -6,7 +6,7 @@ You **can** use Themes.
 
 # UI with it
 
-![Screenshoot](sc.jpg?raw=true "MultiSlider in action")
+<img src="sc.png" width="250">
 
 # Usage
 Just a tiny example:
