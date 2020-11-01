@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class MultiSliderPainter extends CustomPainter {
   final List<double> values;
   final int selectedInputIndex;
-  final double widthOffset;
+  final double horizontalPadding;
 
   final Paint activeTrackColorPaint;
   final Paint inactiveTrackColorPaint;
@@ -16,7 +16,7 @@ class MultiSliderPainter extends CustomPainter {
     Color disabledInactiveTrackColor,
     this.values,
     this.selectedInputIndex,
-    this.widthOffset,
+    this.horizontalPadding,
   })  : activeTrackColorPaint = _paintFromColor(
           isDisabled ? disabledActiveTrackColor : activeTrackColor,
           true,
@@ -29,14 +29,16 @@ class MultiSliderPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final double halfHeight = size.height / 2;
 
-    canvas.drawLine(Offset(widthOffset, halfHeight),
+    canvas.drawLine(Offset(horizontalPadding, halfHeight),
         Offset(values.first, halfHeight), inactiveTrackColorPaint);
 
     canvas.drawLine(Offset(values.first, halfHeight),
         Offset(values.last, halfHeight), activeTrackColorPaint);
 
-    canvas.drawLine(Offset(values.last, halfHeight),
-        Offset(size.width - widthOffset, halfHeight), inactiveTrackColorPaint);
+    canvas.drawLine(
+        Offset(values.last, halfHeight),
+        Offset(size.width - horizontalPadding, halfHeight),
+        inactiveTrackColorPaint);
 
     for (int i = 0; i < values.length; i++) {
       canvas.drawCircle(
