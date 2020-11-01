@@ -30,29 +30,41 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Column(
         children: <Widget>[
-          MultiSlider(
-            values: values1,
-            min: 0,
-            max: 5,
-            onChanged: (values) => setState(() => values1 = values),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 96),
+            child: MultiSlider(
+              values: values1,
+              min: 0,
+              max: 5,
+              onChanged: (values) => setState(() => values1 = values),
+            ),
           ),
-          MultiSlider(
-            values: values2,
-            min: 0,
-            max: 5,
-            onChanged: (values) => setState(() => values2 = values),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 64),
+            child: MultiSlider(
+              values: values2,
+              min: 0,
+              max: 5,
+              onChanged: (values) => setState(() => values2 = values),
+            ),
           ),
-          MultiSlider(
-            values: values3,
-            min: 0,
-            max: 5,
-            onChanged: (values) => setState(() => values3 = values),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: MultiSlider(
+              values: values3,
+              min: 0,
+              max: 5,
+              onChanged: (values) => setState(() => values3 = values),
+            ),
           ),
-          MultiSlider(
-            values: values4,
-            min: 0,
-            max: 5,
-            onChanged: (values) => setState(() => values4 = values),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: MultiSlider(
+              values: values4,
+              min: 0,
+              max: 5,
+              onChanged: (values) => setState(() => values4 = values),
+            ),
           ),
         ],
       ), // This trailing comma makes auto-formatting nicer for build methods.
