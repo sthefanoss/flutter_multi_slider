@@ -28,7 +28,20 @@ class MultiSlider extends StatefulWidget {
     this.inactiveColor,
     this.horizontalPadding = 20.0,
     this.height = 45,
-  }) : _range = max - min;
+  }) : _range = max - min {
+    final valuesCopy = [...values];
+    valuesCopy.sort();
+    for (int index = 0; index < valuesCopy.length; index++)
+      assert(
+        valuesCopy[index] == values[index],
+        'MultiSlider: values must be in ascending order!',
+      );
+
+    assert(
+      values.first >= min && values.last <= max,
+      'MultiSlider: At least one value is outside of min/max boundaries!',
+    );
+  }
 
   @override
   _MultiSliderState createState() => _MultiSliderState();
