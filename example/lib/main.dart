@@ -20,6 +20,7 @@ class _MyHomePageState extends State<MyHomePage> {
   List<double> values1 = [1 / 2];
   List<double> values2 = [1 / 3, 2 / 3];
   List<double> values3 = [1 / 4, 2 / 4, 3 / 4];
+  List<double> values4 = [1 / 5, 2 / 5, 3 / 5, 4 / 5];
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +48,10 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           MultiSlider(
             values: values3,
+          ),
+          MultiSlider(
+            values: values4,
+            onChanged: (values) => setState(() => values4 = values),
           ),
         ],
       ), // This trailing comma makes auto-formatting nicer for build methods.

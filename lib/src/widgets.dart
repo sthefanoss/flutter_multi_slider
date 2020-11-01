@@ -91,9 +91,11 @@ class _MultiSliderState extends State<MultiSlider> {
   }
 
   void handleOnChangeStart(DragStartDetails details) {
-    int index = getInputIndex(details.localPosition.dx);
+    double valuePosition = convertPixelPositionToValue(
+      details.localPosition.dx,
+    );
 
-    if (index == null) return;
+    int index = findNearestValueIndex(valuePosition);
 
     setState(() => selectedInputIndex = index);
 
@@ -125,16 +127,6 @@ class _MultiSliderState extends State<MultiSlider> {
         widget.min;
   }
 
-  int getInputIndex(double xPosition) {
-    double convertedPosition = convertPixelPositionToValue(xPosition);
-    double nearestValue = findNearestValue(convertedPosition);
-
-    if ((convertedPosition - nearestValue).abs() <
-        widget.horizontalPadding / widget._range)
-      return _internalValues.indexOf(nearestValue);
-    return null;
-  }
-
   List<double> updateInternalValues(double xPosition) {
     if (selectedInputIndex == null) return _internalValues;
 
@@ -162,14 +154,25 @@ class _MultiSliderState extends State<MultiSlider> {
         : _internalValues[selectedInputIndex + 1];
   }
 
-  double findNearestValue(double convertedPosition) {
+  int findNearestValueIndex(double convertedPosition) {
+    if (_internalValues.length == 1) return 0;
+
     List<double> differences = _internalValues
         .map<double>((double value) => (value - convertedPosition).abs())
         .toList();
     double minDifference = differences.reduce(
       (previousValue, value) => value < previousValue ? value : previousValue,
     );
-    int minDifferenceIndex = differences.indexOf(minDifference);
-    return _internalValues[minDifferenceIndex];
+
+    int minDifferenceFirstIndex = differences.indexOf(minDifference);
+    int minDifferenceLastIndex = differences.lastIndexOf(minDifference);
+
+    bool hasCollision = minDifferenceLastIndex != minDifferenceFirstIndex;
+
+    if (hasCollision &&
+        (convertedPosition > _internalValues[minDifferenceFirstIndex])) {
+      return minDifferenceLastIndex;
+    }
+    return minDifferenceFirstIndex;
   }
 }
