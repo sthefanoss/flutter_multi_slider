@@ -17,42 +17,43 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  List<double> values1 = [1];
-  List<double> values2 = [1, 2];
-  List<double> values3 = [1, 2, 3];
-  List<double> values4 = [1, 2, 3, 4];
+  List<double> values1 = [1 / 2];
+  List<double> values2 = [1 / 3, 2 / 3];
+  List<double> values3 = [1 / 4, 2 / 4, 3 / 4];
+  List<double> values4 = [1 / 5, 2 / 5, 3 / 5, 4 / 5];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Tests'),
+        title: Text('MultiSlider :)'),
       ),
       body: Column(
         children: <Widget>[
           MultiSlider(
             values: values1,
-            min: 0,
-            max: 5,
             onChanged: (values) => setState(() => values1 = values),
           ),
           MultiSlider(
+            color: Colors.green,
             values: values2,
-            min: 0,
-            max: 5,
             onChanged: (values) => setState(() => values2 = values),
+            onChangeStart: (values) {
+              setState(() => values2 = values);
+              print('going from $values');
+            },
+            onChangeEnd: (values) {
+              setState(() => values2 = values);
+              print('to $values');
+            },
           ),
           MultiSlider(
             values: values3,
-            min: 0,
-            max: 5,
-            onChanged: (values) => setState(() => values3 = values),
           ),
           MultiSlider(
             values: values4,
-            min: 0,
-            max: 5,
             onChanged: (values) => setState(() => values4 = values),
+            color: Colors.red,
           ),
         ],
       ), // This trailing comma makes auto-formatting nicer for build methods.
