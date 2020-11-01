@@ -25,7 +25,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Tests'),
+        title: Text('MultiSlider :)'),
       ),
       body: Column(
         children: <Widget>[
@@ -36,6 +36,14 @@ class _MyHomePageState extends State<MyHomePage> {
           MultiSlider(
             values: values2,
             onChanged: (values) => setState(() => values2 = values),
+            onChangeStart: (values) {
+              setState(() => values2 = values);
+              print('going from $values');
+            },
+            onChangeEnd: (values) {
+              setState(() => values2 = values);
+              print('to $values');
+            },
           ),
           MultiSlider(
             values: values3,
