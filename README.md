@@ -1,14 +1,23 @@
-# flutter_multi_slider
+# MultiSlider
 
-MultiSlider
+Yet another Slider Widget. But here you can use a `List<double>` as input!!!
 
-## Getting Started
+You **can** use Themes.
 
-This project is a starting point for a Dart
-[package](https://flutter.dev/developing-packages/),
-a library module containing code that can be shared easily across
-multiple Flutter or Dart projects.
+# UI with it
 
-For help getting started with Flutter, view our 
-[online documentation](https://flutter.dev/docs), which offers tutorials, 
-samples, guidance on mobile development, and a full API reference.
+![Screenshoot](sc.jpg?raw=true "MultiSlider in action")
+
+# Usage
+Just a tiny example:
+```dart
+MultiSlider(
+    values: _myList,
+    onChanged: (values) => setState(
+        ()=> _myList = values,
+    ),
+    min: -1,
+    max: 1,
+)
+```
+
