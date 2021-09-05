@@ -127,7 +127,9 @@ class _MultiSliderState extends State<MultiSlider> {
 
     setState(() => _selectedInputIndex = index);
 
-    if (widget.onChangeStart != null) widget.onChangeStart!(widget.values);
+    final updatedValues = updateInternalValues(details.localPosition.dx);
+    widget.onChanged!(updatedValues);
+    if (widget.onChangeStart != null) widget.onChangeStart!(updatedValues);
   }
 
   void _handleOnChanged(DragUpdateDetails details) {
