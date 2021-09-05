@@ -3,18 +3,6 @@ import 'package:flutter/material.dart';
 import 'painters.dart';
 
 class MultiSlider extends StatefulWidget {
-  final double max;
-  final double min;
-  final double _range;
-  final double height;
-  final double horizontalPadding;
-
-  final Color? color;
-  final List<double> values;
-  final ValueChanged<List<double>>? onChanged;
-  final ValueChanged<List<double>>? onChangeStart;
-  final ValueChanged<List<double>>? onChangeEnd;
-
   MultiSlider({
     required this.values,
     required this.onChanged,
@@ -25,20 +13,57 @@ class MultiSlider extends StatefulWidget {
     this.color,
     this.horizontalPadding = 20.0,
     this.height = 45,
-  }) : _range = max - min {
+    Key? key,
+  })  : range = max - min,
+        super(key: key) {
+    assert(
+      range > 0,
+      'MultiSlider: max value must be greater than min value!',
+    );
+
     final valuesCopy = [...values];
     valuesCopy.sort();
-    for (int index = 0; index < valuesCopy.length; index++)
+    for (int index = 0; index < valuesCopy.length; index++) {
       assert(
         valuesCopy[index] == values[index],
         'MultiSlider: values must be in ascending order!',
       );
-
+    }
     assert(
       values.first >= min && values.last <= max,
       'MultiSlider: At least one value is outside of min/max boundaries!',
     );
   }
+
+  /// [MultiSlider] maximum value.
+  final double max;
+
+  /// [MultiSlider] minimum value.
+  final double min;
+
+  /// Difference between [max] and [min]. Must be positive!
+  final double range;
+
+  /// [MultiSlider] vertical dimension. Used by [GestureDetector] and [CustomPainter].
+  final double height;
+
+  /// Empty space between the [MultiSlider] bar and the end of [GestureDetector] zone.
+  final double horizontalPadding;
+
+  /// Bar and indicators active color.
+  final Color? color;
+
+  /// List of ordered values which will be changed by user gestures with this widget.
+  final List<double> values;
+
+  /// Callback for every user slide gesture.
+  final ValueChanged<List<double>>? onChanged;
+
+  /// Callback for every time user click on this widget.
+  final ValueChanged<List<double>>? onChangeStart;
+
+  /// Callback for every time user stop click/slide on this widget.
+  final ValueChanged<List<double>>? onChangeEnd;
 
   @override
   _MultiSliderState createState() => _MultiSliderState();
@@ -46,7 +71,7 @@ class MultiSlider extends StatefulWidget {
 
 class _MultiSliderState extends State<MultiSlider> {
   double? _maxWidth;
-  int? selectedInputIndex;
+  int? _selectedInputIndex;
 
   @override
   Widget build(BuildContext context) {
@@ -78,84 +103,85 @@ class _MultiSliderState extends State<MultiSlider> {
                 disabledInactiveTrackColor:
                     sliderTheme.disabledInactiveTrackColor ??
                         theme.colorScheme.onSurface.withOpacity(0.12),
-                selectedInputIndex: selectedInputIndex,
-                values: widget.values.map(convertValueToPixelPosition).toList(),
+                selectedInputIndex: _selectedInputIndex,
+                values:
+                    widget.values.map(_convertValueToPixelPosition).toList(),
                 horizontalPadding: widget.horizontalPadding,
               ),
             ),
           ),
-          onPanStart: isDisabled ? null : handleOnChangeStart,
-          onPanUpdate: isDisabled ? null : handleOnChanged,
-          onPanEnd: isDisabled ? null : handleOnChangeEnd,
+          onPanStart: isDisabled ? null : _handleOnChangeStart,
+          onPanUpdate: isDisabled ? null : _handleOnChanged,
+          onPanEnd: isDisabled ? null : _handleOnChangeEnd,
         );
       },
     );
   }
 
-  void handleOnChangeStart(DragStartDetails details) {
-    double valuePosition = convertPixelPositionToValue(
+  void _handleOnChangeStart(DragStartDetails details) {
+    double valuePosition = _convertPixelPositionToValue(
       details.localPosition.dx,
     );
 
-    int index = findNearestValueIndex(valuePosition);
+    int index = _findNearestValueIndex(valuePosition);
 
-    setState(() => selectedInputIndex = index);
+    setState(() => _selectedInputIndex = index);
 
     if (widget.onChangeStart != null) widget.onChangeStart!(widget.values);
   }
 
-  void handleOnChanged(DragUpdateDetails details) {
+  void _handleOnChanged(DragUpdateDetails details) {
     widget.onChanged!(updateInternalValues(details.localPosition.dx));
   }
 
-  void handleOnChangeEnd(DragEndDetails details) {
-    setState(() => selectedInputIndex = null);
+  void _handleOnChangeEnd(DragEndDetails details) {
+    setState(() => _selectedInputIndex = null);
 
     if (widget.onChangeEnd != null) widget.onChangeEnd!(widget.values);
   }
 
-  double convertValueToPixelPosition(double value) {
+  double _convertValueToPixelPosition(double value) {
     return (value - widget.min) *
             (_maxWidth! - 2 * widget.horizontalPadding) /
-            (widget._range) +
+            (widget.range) +
         widget.horizontalPadding;
   }
 
-  double convertPixelPositionToValue(double pixelPosition) {
+  double _convertPixelPositionToValue(double pixelPosition) {
     return (pixelPosition - widget.horizontalPadding) *
-            (widget._range) /
+            (widget.range) /
             (_maxWidth! - 2 * widget.horizontalPadding) +
         widget.min;
   }
 
   List<double> updateInternalValues(double xPosition) {
-    if (selectedInputIndex == null) return widget.values;
+    if (_selectedInputIndex == null) return widget.values;
 
     List<double> copiedValues = [...widget.values];
 
-    double convertedPosition = convertPixelPositionToValue(xPosition);
+    double convertedPosition = _convertPixelPositionToValue(xPosition);
 
-    copiedValues[selectedInputIndex!] = convertedPosition.clamp(
-      calculateInnerBound(),
-      calculateOuterBound(),
+    copiedValues[_selectedInputIndex!] = convertedPosition.clamp(
+      _calculateInnerBound(),
+      _calculateOuterBound(),
     );
 
     return copiedValues;
   }
 
-  double calculateInnerBound() {
-    return selectedInputIndex == 0
+  double _calculateInnerBound() {
+    return _selectedInputIndex == 0
         ? widget.min
-        : widget.values[selectedInputIndex! - 1];
+        : widget.values[_selectedInputIndex! - 1];
   }
 
-  double calculateOuterBound() {
-    return selectedInputIndex == widget.values.length - 1
+  double _calculateOuterBound() {
+    return _selectedInputIndex == widget.values.length - 1
         ? widget.max
-        : widget.values[selectedInputIndex! + 1];
+        : widget.values[_selectedInputIndex! + 1];
   }
 
-  int findNearestValueIndex(double convertedPosition) {
+  int _findNearestValueIndex(double convertedPosition) {
     if (widget.values.length == 1) return 0;
 
     List<double> differences = widget.values
