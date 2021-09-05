@@ -9,20 +9,19 @@ class MultiSlider extends StatefulWidget {
   final double height;
   final double horizontalPadding;
 
-  final Color color;
-
+  final Color? color;
   final List<double> values;
-  final ValueChanged<List<double>> onChanged;
-  final ValueChanged<List<double>> onChangeStart;
-  final ValueChanged<List<double>> onChangeEnd;
+  final ValueChanged<List<double>>? onChanged;
+  final ValueChanged<List<double>>? onChangeStart;
+  final ValueChanged<List<double>>? onChangeEnd;
 
   MultiSlider({
-    @required this.values,
-    this.onChanged,
+    required this.values,
+    required this.onChanged,
+    this.max = 1,
+    this.min = 0,
     this.onChangeStart,
     this.onChangeEnd,
-    this.max = 1.0,
-    this.min = 0.0,
     this.color,
     this.horizontalPadding = 20.0,
     this.height = 45,
@@ -46,15 +45,8 @@ class MultiSlider extends StatefulWidget {
 }
 
 class _MultiSliderState extends State<MultiSlider> {
-  double _maxWidth;
-  int selectedInputIndex;
-  List<double> _internalValues;
-
-  @override
-  void initState() {
-    _internalValues = widget.values;
-    super.initState();
-  }
+  double? _maxWidth;
+  int? selectedInputIndex;
 
   @override
   Widget build(BuildContext context) {
@@ -87,8 +79,7 @@ class _MultiSliderState extends State<MultiSlider> {
                     sliderTheme.disabledInactiveTrackColor ??
                         theme.colorScheme.onSurface.withOpacity(0.12),
                 selectedInputIndex: selectedInputIndex,
-                values:
-                    _internalValues.map(convertValueToPixelPosition).toList(),
+                values: widget.values.map(convertValueToPixelPosition).toList(),
                 horizontalPadding: widget.horizontalPadding,
               ),
             ),
@@ -110,23 +101,22 @@ class _MultiSliderState extends State<MultiSlider> {
 
     setState(() => selectedInputIndex = index);
 
-    if (widget.onChangeStart != null) widget.onChangeStart(_internalValues);
+    if (widget.onChangeStart != null) widget.onChangeStart!(widget.values);
   }
 
   void handleOnChanged(DragUpdateDetails details) {
-    _internalValues = updateInternalValues(details.localPosition.dx);
-    widget.onChanged(_internalValues);
+    widget.onChanged!(updateInternalValues(details.localPosition.dx));
   }
 
   void handleOnChangeEnd(DragEndDetails details) {
     setState(() => selectedInputIndex = null);
 
-    if (widget.onChangeEnd != null) widget.onChangeEnd(_internalValues);
+    if (widget.onChangeEnd != null) widget.onChangeEnd!(widget.values);
   }
 
   double convertValueToPixelPosition(double value) {
     return (value - widget.min) *
-            (_maxWidth - 2 * widget.horizontalPadding) /
+            (_maxWidth! - 2 * widget.horizontalPadding) /
             (widget._range) +
         widget.horizontalPadding;
   }
@@ -134,18 +124,18 @@ class _MultiSliderState extends State<MultiSlider> {
   double convertPixelPositionToValue(double pixelPosition) {
     return (pixelPosition - widget.horizontalPadding) *
             (widget._range) /
-            (_maxWidth - 2 * widget.horizontalPadding) +
+            (_maxWidth! - 2 * widget.horizontalPadding) +
         widget.min;
   }
 
   List<double> updateInternalValues(double xPosition) {
-    if (selectedInputIndex == null) return _internalValues;
+    if (selectedInputIndex == null) return widget.values;
 
-    List<double> copiedValues = [..._internalValues];
+    List<double> copiedValues = [...widget.values];
 
     double convertedPosition = convertPixelPositionToValue(xPosition);
 
-    copiedValues[selectedInputIndex] = convertedPosition.clamp(
+    copiedValues[selectedInputIndex!] = convertedPosition.clamp(
       calculateInnerBound(),
       calculateOuterBound(),
     );
@@ -156,19 +146,19 @@ class _MultiSliderState extends State<MultiSlider> {
   double calculateInnerBound() {
     return selectedInputIndex == 0
         ? widget.min
-        : _internalValues[selectedInputIndex - 1];
+        : widget.values[selectedInputIndex! - 1];
   }
 
   double calculateOuterBound() {
-    return selectedInputIndex == _internalValues.length - 1
+    return selectedInputIndex == widget.values.length - 1
         ? widget.max
-        : _internalValues[selectedInputIndex + 1];
+        : widget.values[selectedInputIndex! + 1];
   }
 
   int findNearestValueIndex(double convertedPosition) {
-    if (_internalValues.length == 1) return 0;
+    if (widget.values.length == 1) return 0;
 
-    List<double> differences = _internalValues
+    List<double> differences = widget.values
         .map<double>((double value) => (value - convertedPosition).abs())
         .toList();
     double minDifference = differences.reduce(
@@ -181,7 +171,7 @@ class _MultiSliderState extends State<MultiSlider> {
     bool hasCollision = minDifferenceLastIndex != minDifferenceFirstIndex;
 
     if (hasCollision &&
-        (convertedPosition > _internalValues[minDifferenceFirstIndex])) {
+        (convertedPosition > widget.values[minDifferenceFirstIndex])) {
       return minDifferenceLastIndex;
     }
     return minDifferenceFirstIndex;

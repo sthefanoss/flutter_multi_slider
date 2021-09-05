@@ -21,6 +21,7 @@ class _MyHomePageState extends State<MyHomePage> {
   List<double> values2 = [1 / 3, 2 / 3];
   List<double> values3 = [1 / 4, 2 / 4, 3 / 4];
   List<double> values4 = [1 / 5, 2 / 5, 3 / 5, 4 / 5];
+  double singleValue = 1.0;
 
   @override
   Widget build(BuildContext context) {
@@ -30,9 +31,21 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Column(
         children: <Widget>[
+          Slider(
+            value: singleValue,
+            onChanged: (value) => setState(() => singleValue = value),
+          ),
+          Slider(
+            value: singleValue,
+            onChanged: null, //(value) => setState(() => singleValue = value),
+          ),
           MultiSlider(
             values: values1,
             onChanged: (values) => setState(() => values1 = values),
+          ),
+          MultiSlider(
+            values: values1,
+            onChanged: null, // (values) => setState(() => values1 = values),
           ),
           MultiSlider(
             color: Colors.green,
@@ -49,6 +62,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           MultiSlider(
             values: values3,
+            onChanged: null,
           ),
           MultiSlider(
             values: values4,
