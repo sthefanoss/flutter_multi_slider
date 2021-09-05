@@ -6,7 +6,7 @@ You **can** use Themes.
 
 # UI with it
 
-<img src="https://github.com/sthefanoss/flutter_multi_slider/blob/main/sc.png" width="250">
+<img src="https://raw.githubusercontent.com/sthefanoss/flutter_multi_slider/main/sc.png" width="250">
 
 # Usage
 Just a tiny example:
