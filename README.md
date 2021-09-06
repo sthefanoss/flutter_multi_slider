@@ -1,23 +1,32 @@
 # MultiSlider
 
-Yet another Slider Widget. But here you can use a `List<double>` as input!!!
-
-You **can** use Themes.
+A custom Slider which accepts a list of ordered values. It's meant to be as simple as the original Slider!
 
 # UI with it
 
-<img src="https://raw.githubusercontent.com/sthefanoss/flutter_multi_slider/main/sc.png" width="250">
+<img src="https://raw.githubusercontent.com/sthefanoss/flutter_multi_slider/main/giphy.gif" width="250">
 
-# Usage
-Just a tiny example:
+# Usages
+## Continuous slider.
 ```dart
 MultiSlider(
     values: _myList,
-    onChanged: (values) => setState(
-        ()=> _myList = values,
-    ),
-    min: -1,
-    max: 1,
-)
+    onChanged: (values) => setState(()=> _myList = values),
+),
 ```
-
+## Discrete slider. 
+```dart
+MultiSlider(
+    values: _myList,
+    onChanged: (values) => setState(()=> _myList = values),
+    divisions: 10,
+),
+```
+## With custom trace pattern. 
+```dart
+MultiSlider(
+    values: _myList,
+    onChanged: (values) => setState(()=> _myList = values),
+    valueRangePainterCallback: (range) => range.index % 2 == 1,
+),
+```
