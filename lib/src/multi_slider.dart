@@ -416,6 +416,6 @@ double _getDiscreteValue(
   double end,
   int divisions,
 ) {
-  final k = (start - end) / divisions;
+  final k = (end - start) / divisions;
   return start + ((value - start) / k).roundToDouble() * k;
 }
