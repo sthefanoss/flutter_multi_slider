@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'dart:math' as math;
 
-import 'painters.dart';
+typedef DivisionPainterCallback = bool Function(Division division);
 
 class MultiSlider extends StatefulWidget {
   MultiSlider({
@@ -11,18 +12,17 @@ class MultiSlider extends StatefulWidget {
     this.onChangeStart,
     this.onChangeEnd,
     this.color,
-    this.horizontalPadding = 20.0,
+    this.horizontalPadding = 26.0,
     this.height = 45,
+    this.divisions,
+    this.divisionPainterCallback,
     Key? key,
-  })  : range = max - min,
+  })  : assert(divisions == null || divisions > 0),
+        assert(max - min >= 0),
+        range = max - min,
         super(key: key) {
-    assert(
-      range > 0,
-      'MultiSlider: max value must be greater than min value!',
-    );
+    final valuesCopy = [...values]..sort();
 
-    final valuesCopy = [...values];
-    valuesCopy.sort();
     for (int index = 0; index < valuesCopy.length; index++) {
       assert(
         valuesCopy[index] == values[index],
@@ -65,6 +65,11 @@ class MultiSlider extends StatefulWidget {
   /// Callback for every time user stop click/slide on this widget.
   final ValueChanged<List<double>>? onChangeEnd;
 
+  /// Number of divisions for discrete Slider.
+  final int? divisions;
+
+  final DivisionPainterCallback? divisionPainterCallback;
+
   @override
   _MultiSliderState createState() => _MultiSliderState();
 }
@@ -72,13 +77,21 @@ class MultiSlider extends StatefulWidget {
 class _MultiSliderState extends State<MultiSlider> {
   double? _maxWidth;
   int? _selectedInputIndex;
+  late bool _isDiscrete;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _isDiscrete = widget.divisions != null;
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final sliderTheme = SliderTheme.of(context);
 
-    final bool isDisabled = widget.onChanged == null;
+    final bool isDisabled = widget.onChanged == null || widget.range == 0;
 
     return LayoutBuilder(
       builder: (context, BoxConstraints constraints) {
@@ -89,7 +102,10 @@ class _MultiSliderState extends State<MultiSlider> {
             width: double.infinity,
             height: widget.height,
             child: CustomPaint(
-              painter: MultiSliderPainter(
+              painter: _MultiSliderPainter(
+                isActiveDivisionCallback: widget.divisionPainterCallback ??
+                    _defaultDivisionPainterCallback,
+                isDiscrete: _isDiscrete,
                 isDisabled: isDisabled,
                 activeTrackColor: widget.color ??
                     sliderTheme.activeTrackColor ??
@@ -150,10 +166,12 @@ class _MultiSliderState extends State<MultiSlider> {
   }
 
   double _convertPixelPositionToValue(double pixelPosition) {
-    return (pixelPosition - widget.horizontalPadding) *
+    final value = (pixelPosition - widget.horizontalPadding) *
             (widget.range) /
             (_maxWidth! - 2 * widget.horizontalPadding) +
         widget.min;
+
+    return value;
   }
 
   List<double> updateInternalValues(double xPosition) {
@@ -203,5 +221,154 @@ class _MultiSliderState extends State<MultiSlider> {
       return minDifferenceLastIndex;
     }
     return minDifferenceFirstIndex;
+  }
+
+  bool _defaultDivisionPainterCallback(Division division) =>
+      !division.isFirst && !division.isLast;
+}
+
+class Division {
+  const Division(
+    this.start,
+    this.end,
+    this.index,
+    this.isFirst,
+    this.isLast,
+  );
+
+  final double start;
+  final double end;
+  final int index;
+  final bool isFirst;
+  final bool isLast;
+}
+
+class _MultiSliderPainter extends CustomPainter {
+  final List<double> values;
+  final int? selectedInputIndex;
+  final double horizontalPadding;
+  final Paint activeTrackColorPaint;
+  final Paint bigCircleColorPaint;
+  final Paint inactiveTrackColorPaint;
+  final bool isDiscrete;
+  final DivisionPainterCallback isActiveDivisionCallback;
+
+  _MultiSliderPainter({
+    required bool isDisabled,
+    required Color activeTrackColor,
+    required Color inactiveTrackColor,
+    required Color disabledActiveTrackColor,
+    required Color disabledInactiveTrackColor,
+    required this.values,
+    required this.selectedInputIndex,
+    required this.horizontalPadding,
+    required this.isDiscrete,
+    required this.isActiveDivisionCallback,
+  })  : activeTrackColorPaint = _paintFromColor(
+          isDisabled ? disabledActiveTrackColor : activeTrackColor,
+          true,
+        ),
+        inactiveTrackColorPaint = _paintFromColor(
+          isDisabled ? disabledInactiveTrackColor : inactiveTrackColor,
+        ),
+        bigCircleColorPaint = _paintFromColor(
+          activeTrackColor.withOpacity(0.20),
+        );
+
+  List<Division> _makeDivisions(
+    List<double> innerValues,
+    double start,
+    double end,
+  ) {
+    final values = [start, ...innerValues, end];
+    return List<Division>.generate(
+      values.length - 1,
+      (index) => Division(
+        values[index],
+        values[index + 1],
+        index,
+        index == 0,
+        index == values.length - 2,
+      ),
+    );
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final double halfHeight = size.height / 2;
+
+    final divisions = _makeDivisions(
+      values,
+      horizontalPadding,
+      size.width - horizontalPadding,
+    );
+
+    canvas.drawArc(
+      Rect.fromCircle(
+        center: Offset(divisions.first.start, halfHeight),
+        radius: isActiveDivisionCallback(divisions.first) ? 3 : 2,
+      ),
+      math.pi / 2,
+      math.pi,
+      true,
+      isActiveDivisionCallback(divisions.first)
+          ? activeTrackColorPaint
+          : inactiveTrackColorPaint,
+    );
+
+    canvas.drawArc(
+      Rect.fromCircle(
+        center: Offset(divisions.last.end, halfHeight),
+        radius: isActiveDivisionCallback(divisions.last) ? 3 : 2,
+      ),
+      -math.pi / 2,
+      math.pi,
+      true,
+      isActiveDivisionCallback(divisions.last)
+          ? activeTrackColorPaint
+          : inactiveTrackColorPaint,
+    );
+
+    for (Division division in divisions) {
+      canvas.drawLine(
+        Offset(division.start, halfHeight),
+        Offset(division.end, halfHeight),
+        isActiveDivisionCallback(division)
+            ? activeTrackColorPaint
+            : inactiveTrackColorPaint,
+      );
+    }
+
+    for (int i = 0; i < values.length; i++) {
+      canvas.drawCircle(
+        Offset(values[i], halfHeight),
+        10,
+        _paintFromColor(Colors.white),
+      );
+
+      canvas.drawCircle(
+        Offset(values[i], halfHeight),
+        10,
+        activeTrackColorPaint,
+      );
+
+      if (selectedInputIndex != null)
+        canvas.drawCircle(
+          Offset(values[selectedInputIndex!], halfHeight),
+          22.5,
+          bigCircleColorPaint,
+        );
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => true;
+
+  static Paint _paintFromColor(Color color, [bool active = false]) {
+    return Paint()
+      ..style = PaintingStyle.fill
+      ..color = color
+      ..strokeWidth = active ? 6 : 4
+      ..isAntiAlias = true;
   }
 }

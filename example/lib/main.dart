@@ -68,6 +68,13 @@ class _MyHomePageState extends State<MyHomePage> {
             values: values4,
             onChanged: (values) => setState(() => values4 = values),
             color: Colors.red,
+            divisionPainterCallback: (division) => division.index % 2 == 1,
+          ),
+          MultiSlider(
+            values: values4,
+            onChanged: (values) => setState(() => values4 = values),
+            color: Colors.red,
+            divisionPainterCallback: (division) => division.index % 2 == 0,
           ),
         ],
       ), // This trailing comma makes auto-formatting nicer for build methods.
