@@ -31,17 +31,21 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Column(
         children: <Widget>[
-          Slider(
-            value: singleValue,
-            onChanged: (value) => setState(() => singleValue = value),
-          ),
-          Slider(
-            value: singleValue,
-            onChanged: null, //(value) => setState(() => singleValue = value),
-          ),
           MultiSlider(
             values: values1,
             onChanged: (values) => setState(() => values1 = values),
+          ),
+          MultiSlider(
+            values: values4,
+            onChanged: null, //(values) => setState(() => values4 = values),
+            valueRangePainterCallback: (range) => range.index % 2 == 0,
+            divisions: 5,
+          ),
+          MultiSlider(
+            values: values4,
+            onChanged: (values) => setState(() => values4 = values),
+            valueRangePainterCallback: (range) => range.index % 2 == 1,
+            divisions: 48,
           ),
           MultiSlider(
             values: values1,
@@ -68,13 +72,14 @@ class _MyHomePageState extends State<MyHomePage> {
             values: values4,
             onChanged: (values) => setState(() => values4 = values),
             color: Colors.red,
-            divisionPainterCallback: (division) => division.index % 2 == 1,
+            valueRangePainterCallback: (division) => division.index % 2 == 1,
           ),
           MultiSlider(
             values: values4,
             onChanged: (values) => setState(() => values4 = values),
             color: Colors.red,
-            divisionPainterCallback: (division) => division.index % 2 == 0,
+            divisions: 5,
+            valueRangePainterCallback: (division) => division.index % 2 == 0,
           ),
         ],
       ), // This trailing comma makes auto-formatting nicer for build methods.

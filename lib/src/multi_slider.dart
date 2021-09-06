@@ -196,6 +196,18 @@ class _MultiSliderState extends State<MultiSlider> {
       _calculateOuterBound(),
     );
 
+    if (widget.divisions != null) {
+      return copiedValues
+          .map<double>(
+            (value) => _getDiscreteValue(
+              value,
+              widget.min,
+              widget.max,
+              widget.divisions!,
+            ),
+          )
+          .toList();
+    }
     return copiedValues;
   }
 
@@ -269,29 +281,37 @@ class _MultiSliderPainter extends CustomPainter {
           activeTrackColor.withOpacity(0.20),
         );
 
-  List<ValueRange> _makeRanges(
-    List<double> innerValues,
-    double start,
-    double end,
-  ) {
-    final values = [start, ...innerValues, end];
-    return List<ValueRange>.generate(
-      values.length - 1,
-      (index) => ValueRange(
-        values[index],
-        values[index + 1],
-        index,
-        index == 0,
-        index == values.length - 2,
-      ),
-    );
-  }
-
   @override
   void paint(Canvas canvas, Size size) {
     final double halfHeight = size.height / 2;
     final canvasStart = horizontalPadding;
     final canvasEnd = size.width - horizontalPadding;
+
+    List<ValueRange> _makeRanges(
+      List<double> innerValues,
+      double start,
+      double end,
+    ) {
+      final values = <double>[
+        start,
+        ...innerValues
+            .map<double>(divisions == null
+                ? (v) => v
+                : (v) => _getDiscreteValue(v, start, end, divisions!))
+            .toList(),
+        end
+      ];
+      return List<ValueRange>.generate(
+        values.length - 1,
+        (index) => ValueRange(
+          values[index],
+          values[index + 1],
+          index,
+          index == 0,
+          index == values.length - 2,
+        ),
+      );
+    }
 
     final valueRanges = _makeRanges(values, canvasStart, canvasEnd);
 
@@ -331,9 +351,13 @@ class _MultiSliderPainter extends CustomPainter {
       );
     }
 
-    if (divisions != null)
-      for (int index = 0; index <= divisions!; index++) {
-        double x = canvasStart + index * (canvasEnd - canvasStart) / divisions!;
+    if (divisions != null) {
+      final divisionsList = List<double>.generate(
+          divisions! + 1,
+          (index) =>
+              canvasStart + index * (canvasEnd - canvasStart) / divisions!);
+
+      for (double x in divisionsList) {
         final valueRange = valueRanges.firstWhere(
           (valueRange) => valueRange.contains(x),
         );
@@ -346,23 +370,28 @@ class _MultiSliderPainter extends CustomPainter {
               : activeTrackColorPaint.color.withOpacity(0.5)),
         );
       }
+    }
 
     for (int i = 0; i < values.length; i++) {
+      double x = divisions == null
+          ? values[i]
+          : _getDiscreteValue(values[i], canvasStart, canvasEnd, divisions!);
+
       canvas.drawCircle(
-        Offset(values[i], halfHeight),
+        Offset(x, halfHeight),
         10,
         _paintFromColor(Colors.white),
       );
 
       canvas.drawCircle(
-        Offset(values[i], halfHeight),
+        Offset(x, halfHeight),
         10,
         activeTrackColorPaint,
       );
 
-      if (selectedInputIndex != null)
+      if (selectedInputIndex == i)
         canvas.drawCircle(
-          Offset(values[selectedInputIndex!], halfHeight),
+          Offset(x, halfHeight),
           22.5,
           bigCircleColorPaint,
         );
@@ -379,4 +408,14 @@ class _MultiSliderPainter extends CustomPainter {
       ..strokeWidth = active ? 6 : 4
       ..isAntiAlias = true;
   }
+}
+
+double _getDiscreteValue(
+  double value,
+  double start,
+  double end,
+  int divisions,
+) {
+  final k = (start - end) / divisions;
+  return start + ((value - start) / k).roundToDouble() * k;
 }
