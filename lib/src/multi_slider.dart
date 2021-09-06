@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
+/// Used in [ValueRangePainterCallback] as parameter.
+/// Every range between the edges of [MultiSlider] generate an [ValueRange].
+/// Do NOT be mistaken with discrete intervals made by [divisions]!
 class ValueRange {
   const ValueRange(
     this.start,
@@ -86,6 +89,8 @@ class MultiSlider extends StatefulWidget {
   /// Number of divisions for discrete Slider.
   final int? divisions;
 
+  /// Used to decide how a line between values or the boundaries should be painted.
+  /// Returns [bool] and pass an [ValueRange] object as parameter.
   final ValueRangePainterCallback? valueRangePainterCallback;
 
   @override
