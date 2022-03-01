@@ -320,9 +320,10 @@ class _MultiSliderPainter extends CustomPainter {
   final double selectedMarkerRadius;
   final int? divisions;
   final ValueRangePainterCallback valueRangePainterCallback;
+  final bool isDisabled;
 
   _MultiSliderPainter({
-    required bool isDisabled,
+    required this.isDisabled,
     required Color activeTrackColor,
     required Color inactiveTrackColor,
     required Color disabledActiveTrackColor,
@@ -394,6 +395,9 @@ class _MultiSliderPainter extends CustomPainter {
 
     // TODO we could optimize this by making the decision one time on the colors creation
     Paint getTrackColor(int index, ValueRange valueRange) {
+      if (isDisabled) {
+        return inactiveTrackColorPaint;
+      }
       if (valueRangePainterCallback(valueRange)) {
         if (activeTrackColors.length == 0) {
           return activeTrackColorPaint;
@@ -472,6 +476,9 @@ class _MultiSliderPainter extends CustomPainter {
 
     // TODO we could optimize this by making the decision one time on the colors creation
     Paint getMarkerColor({required double x, required int index, required bool selected}) {
+      if (isDisabled) {
+        return inactiveTrackColorPaint;
+      }
       if (markerColors.length != 0) {
         return _paintFromColor(markerColors[index]);
       } else {
