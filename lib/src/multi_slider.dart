@@ -395,22 +395,19 @@ class _MultiSliderPainter extends CustomPainter {
 
     // TODO we could optimize this by making the decision one time on the colors creation
     Paint getTrackColor(int index, ValueRange valueRange) {
-      if (isDisabled) {
-        return inactiveTrackColorPaint;
-      }
-      if (valueRangePainterCallback(valueRange)) {
-        if (activeTrackColors.length == 0) {
-          return activeTrackColorPaint;
-        } else {
-          // TODO do we need to pre-generate the Paints from the Colors?
-          return _paintFromColor(activeTrackColors[index]);
-        }
-      } else {
+      if (isDisabled || !valueRangePainterCallback(valueRange)) {
         if (inactiveTrackColors.length == 0) {
           return inactiveTrackColorPaint;
         } else {
           // TODO do we need to pre-generate the Paints from the Colors?
           return _paintFromColor(inactiveTrackColors[index]);
+        }
+      } else {
+        if (activeTrackColors.length == 0) {
+          return activeTrackColorPaint;
+        } else {
+          // TODO do we need to pre-generate the Paints from the Colors?
+          return _paintFromColor(activeTrackColors[index]);
         }
       }
     }
@@ -478,8 +475,7 @@ class _MultiSliderPainter extends CustomPainter {
     Paint getMarkerColor({required double x, required int index, required bool selected}) {
       if (isDisabled) {
         return inactiveTrackColorPaint;
-      }
-      if (markerColors.length != 0) {
+      } else if (markerColors.length != 0) {
         return _paintFromColor(markerColors[index]);
       } else {
         return selected ? bigCircleColorPaint : activeTrackColorPaint;
