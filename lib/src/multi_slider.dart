@@ -37,6 +37,12 @@ class MultiSlider extends StatefulWidget {
     this.height = 45,
     this.divisions,
     this.valueRangePainterCallback,
+    this.activeTrackColors,
+    this.inactiveTrackColors,
+    this.markerColors,
+    this.markerIcons,
+    this.activeTrackWidth,
+    this.inactiveTrackWidth,
     Key? key,
   })  : assert(divisions == null || divisions > 0),
         assert(max - min >= 0),
@@ -54,6 +60,21 @@ class MultiSlider extends StatefulWidget {
       values.first >= min && values.last <= max,
       'MultiSlider: At least one value is outside of min/max boundaries!',
     );
+
+    assert(inactiveTrackColors == null || activeTrackColors?.length == values.length + 1,
+        'MultiSlider: If specifying custom track colors, must specify values.length + 1 color values');
+
+    assert(inactiveTrackColors == null || inactiveTrackColors?.length == values.length + 1,
+        'MultiSlider: If specifying custom track colors, must specify values.length + 1 color values');
+    
+    assert(markerColors == null || markerColors?.length == values.length,
+        'MultiSlider: If specifying custom marker colors, must specify same number of colors as values');
+    
+    assert(markerIcons == null || markerIcons?.length == values.length,
+        'MultiSlider: If specifying custom track colors, must specify same number of icons as values');
+    
+    assert(markerColors == null || markerColors?.length != 0 || markerIcons != null || markerIcons?.length != 0,
+        'MultiSlider: Specify markerColors OR markerIcons, but not both');
   }
 
   /// [MultiSlider] maximum value.
@@ -93,6 +114,18 @@ class MultiSlider extends StatefulWidget {
   /// Returns [bool] and pass an [ValueRange] object as parameter.
   final ValueRangePainterCallback? valueRangePainterCallback;
 
+  final List<Color>? activeTrackColors;
+
+  final List<Color>? inactiveTrackColors;
+
+  final List<Color>? markerColors;
+
+  final List<IconData>? markerIcons;
+
+  final double? activeTrackWidth;
+
+  final double? inactiveTrackWidth;
+
   @override
   _MultiSliderState createState() => _MultiSliderState();
 }
@@ -100,9 +133,12 @@ class MultiSlider extends StatefulWidget {
 class _MultiSliderState extends State<MultiSlider> {
   double? _maxWidth;
   int? _selectedInputIndex;
+  static const double _defaultActiveTrackWidth = 6;
+  static const double _defaultInactiveTrackWidth = 4;
 
   @override
   Widget build(BuildContext context) {
+    print("Multi-slider state build");
     final theme = Theme.of(context);
     final sliderTheme = SliderTheme.of(context);
 
@@ -138,6 +174,12 @@ class _MultiSliderState extends State<MultiSlider> {
                 values:
                     widget.values.map(_convertValueToPixelPosition).toList(),
                 horizontalPadding: widget.horizontalPadding,
+                activeTrackColors: widget.activeTrackColors ?? [],
+                inactiveTrackColors: widget.inactiveTrackColors ?? [],
+                markerColors: widget.markerColors ?? [],
+                markerIcons: widget.markerIcons ?? [],
+                activeTrackWidth: widget.activeTrackWidth ?? _defaultActiveTrackWidth,
+                inactiveTrackWidth: widget.inactiveTrackWidth ?? _defaultInactiveTrackWidth,
               ),
             ),
           ),
@@ -261,6 +303,12 @@ class _MultiSliderPainter extends CustomPainter {
   final Paint activeTrackColorPaint;
   final Paint bigCircleColorPaint;
   final Paint inactiveTrackColorPaint;
+  final List<Color> activeTrackColors;
+  final List<Color> inactiveTrackColors;
+  final List<Color> markerColors;
+  final List<IconData> markerIcons;
+  final double activeTrackWidth;
+  final double inactiveTrackWidth;
   final int? divisions;
   final ValueRangePainterCallback valueRangePainterCallback;
 
@@ -275,15 +323,27 @@ class _MultiSliderPainter extends CustomPainter {
     required this.horizontalPadding,
     required this.divisions,
     required this.valueRangePainterCallback,
-  })  : activeTrackColorPaint = _paintFromColor(
+    this.activeTrackColors = const [],
+    this.inactiveTrackColors = const [],
+    this.markerColors = const [],
+    this.markerIcons = const[],
+    this.activeTrackWidth = _MultiSliderState._defaultActiveTrackWidth,
+    this.inactiveTrackWidth = _MultiSliderState._defaultInactiveTrackWidth,
+  })  : activeTrackColorPaint = paintFromColor(
           isDisabled ? disabledActiveTrackColor : activeTrackColor,
+          activeTrackWidth,
+          inactiveTrackWidth,
           true,
         ),
-        inactiveTrackColorPaint = _paintFromColor(
+        inactiveTrackColorPaint = paintFromColor(
           isDisabled ? disabledInactiveTrackColor : inactiveTrackColor,
+          activeTrackWidth,
+          inactiveTrackWidth,
         ),
-        bigCircleColorPaint = _paintFromColor(
+        bigCircleColorPaint = paintFromColor(
           activeTrackColor.withOpacity(0.20),
+          activeTrackWidth,
+          inactiveTrackWidth,
         );
 
   @override
@@ -318,41 +378,60 @@ class _MultiSliderPainter extends CustomPainter {
       );
     }
 
+    // TODO we could optimize this by making the decision one time on the colors creation
+    Paint getTrackColor(int index, ValueRange valueRange) {
+      if (valueRangePainterCallback(valueRange)) {
+        if (activeTrackColors.length == 0) {
+          return activeTrackColorPaint;
+        } else {
+          // TODO do we need to pre-generate the Paints from the Colors?
+          return _paintFromColor(activeTrackColors[index]);
+        }
+      } else {
+        if (inactiveTrackColors.length == 0) {
+          return inactiveTrackColorPaint;
+        } else {
+          // TODO do we need to pre-generate the Paints from the Colors?
+          return _paintFromColor(inactiveTrackColors[index]);
+        }
+      }
+    }
+
     final valueRanges = _makeRanges(values, canvasStart, canvasEnd);
 
+    // half circle at start of line
     canvas.drawArc(
       Rect.fromCircle(
         center: Offset(valueRanges.first.start, halfHeight),
-        radius: valueRangePainterCallback(valueRanges.first) ? 3 : 2,
+        // TODO should we pre-calc this for performance reasons?
+        radius: (valueRangePainterCallback(valueRanges.last) ? activeTrackWidth : inactiveTrackWidth) / 2,
       ),
       math.pi / 2,
       math.pi,
       true,
-      valueRangePainterCallback(valueRanges.first)
-          ? activeTrackColorPaint
-          : inactiveTrackColorPaint,
+      getTrackColor(0, valueRanges.first)
     );
 
+    // half circle at start of line
     canvas.drawArc(
       Rect.fromCircle(
         center: Offset(valueRanges.last.end, halfHeight),
-        radius: valueRangePainterCallback(valueRanges.last) ? 3 : 2,
+        // TODO should we pre-calc this for performance reasons?
+        radius: (valueRangePainterCallback(valueRanges.last) ? activeTrackWidth : inactiveTrackWidth) / 2,
       ),
       -math.pi / 2,
       math.pi,
       true,
-      valueRangePainterCallback(valueRanges.last)
-          ? activeTrackColorPaint
-          : inactiveTrackColorPaint,
+      getTrackColor(valueRanges.length - 1, valueRanges.last)
     );
 
-    for (ValueRange valueRange in valueRanges) {
+    // Draw all line segments in the middle of the slider
+    for (int index = 0; index < valueRanges.length; index++) {
+      var valueRange = valueRanges[index];
       canvas.drawLine(
         Offset(valueRange.start, halfHeight),
         Offset(valueRange.end, halfHeight),
-        valueRangePainterCallback(valueRange)
-            ? activeTrackColorPaint
-            : inactiveTrackColorPaint,
+        getTrackColor(index, valueRange),
       );
     }
 
@@ -384,16 +463,28 @@ class _MultiSliderPainter extends CustomPainter {
 
       canvas.drawCircle(
         Offset(x, halfHeight),
-        10,
+        15,
         _paintFromColor(Colors.white),
       );
 
       canvas.drawCircle(
         Offset(x, halfHeight),
-        10,
+        // TODO this should be a parameter as well
+        15,
         activeTrackColorPaint,
       );
 
+      // TODO this is very hacky/hard coded right now, needs cleaned up
+      if (markerIcons.length > 0) {
+        var icon = markerIcons[i];
+        TextPainter textPainter = TextPainter(textDirection: TextDirection.rtl);
+        textPainter.text = TextSpan(text: String.fromCharCode(icon.codePoint),
+                style: TextStyle(fontSize: 20.0,fontFamily: icon.fontFamily));
+        textPainter.layout();
+        textPainter.paint(canvas, Offset(x - 10, halfHeight - 10));
+      }
+
+      // TODO if we paramaterize the size above, we should parameterize this one too
       if (selectedInputIndex == i)
         canvas.drawCircle(
           Offset(x, halfHeight),
@@ -406,12 +497,16 @@ class _MultiSliderPainter extends CustomPainter {
   @override
   bool shouldRepaint(CustomPainter oldDelegate) => true;
 
-  static Paint _paintFromColor(Color color, [bool active = false]) {
+  static Paint paintFromColor(Color color, double activeTrackWidth, double inactiveTrackWidth, [bool active = false]) {
     return Paint()
       ..style = PaintingStyle.fill
       ..color = color
-      ..strokeWidth = active ? 6 : 4
+      ..strokeWidth = active ? activeTrackWidth : inactiveTrackWidth
       ..isAntiAlias = true;
+  }
+
+  Paint _paintFromColor(Color color, [bool active = false]) {
+    return paintFromColor(color, activeTrackWidth, inactiveTrackWidth, active);
   }
 }
 
