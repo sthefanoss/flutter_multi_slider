@@ -18,6 +18,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  List<double> t = [0.1, 0.2];
   List<double> monday = [0.1, 0.2];
   List<double> tuesday = [0.1, 0.2, 0.4, 0.5];
   List<double> wednesday = [0.1, 0.2];
@@ -35,42 +36,55 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text('MultiSlider'),
       ),
-      body: ListView(
-        children: <Widget>[
-          WeekDaySchedule(
-            weekDay: 'Monday',
-            values: monday,
-            onChanged: (value) => setState(() => monday = value),
-            enabled: mondayEnabled,
-            onToggle: (value) => setState(() => mondayEnabled = value),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 50),
+            child: MultiSlider(
+              values: t,
+              onChanged: (value) => setState(() => t = value),
+            ),
           ),
-          WeekDaySchedule(
-            weekDay: 'Tuesday',
-            values: tuesday,
-            onChanged: (value) => setState(() => tuesday = value),
-            enabled: tuesdayEnabled,
-            onToggle: (value) => setState(() => tuesdayEnabled = value),
-          ),
-          WeekDaySchedule(
-            weekDay: 'Wednesday',
-            values: wednesday,
-            onChanged: (value) => setState(() => wednesday = value),
-            enabled: wednesdayEnabled,
-            onToggle: (value) => setState(() => wednesdayEnabled = value),
-          ),
-          WeekDaySchedule(
-            weekDay: 'Thursday',
-            values: thursday,
-            onChanged: (value) => setState(() => thursday = value),
-            enabled: thursdayEnabled,
-            onToggle: (value) => setState(() => thursdayEnabled = value),
-          ),
-          WeekDaySchedule(
-            weekDay: 'Friday',
-            values: friday,
-            onChanged: (value) => setState(() => friday = value),
-            enabled: fridayEnabled,
-            onToggle: (value) => setState(() => fridayEnabled = value),
+          Expanded(
+            child: ListView(
+              children: <Widget>[
+                WeekDaySchedule(
+                  weekDay: 'Monday',
+                  values: monday,
+                  onChanged: (value) => setState(() => monday = value),
+                  enabled: mondayEnabled,
+                  onToggle: (value) => setState(() => mondayEnabled = value),
+                ),
+                WeekDaySchedule(
+                  weekDay: 'Tuesday',
+                  values: tuesday,
+                  onChanged: (value) => setState(() => tuesday = value),
+                  enabled: tuesdayEnabled,
+                  onToggle: (value) => setState(() => tuesdayEnabled = value),
+                ),
+                WeekDaySchedule(
+                  weekDay: 'Wednesday',
+                  values: wednesday,
+                  onChanged: (value) => setState(() => wednesday = value),
+                  enabled: wednesdayEnabled,
+                  onToggle: (value) => setState(() => wednesdayEnabled = value),
+                ),
+                WeekDaySchedule(
+                  weekDay: 'Thursday',
+                  values: thursday,
+                  onChanged: (value) => setState(() => thursday = value),
+                  enabled: thursdayEnabled,
+                  onToggle: (value) => setState(() => thursdayEnabled = value),
+                ),
+                WeekDaySchedule(
+                  weekDay: 'Friday',
+                  values: friday,
+                  onChanged: (value) => setState(() => friday = value),
+                  enabled: fridayEnabled,
+                  onToggle: (value) => setState(() => fridayEnabled = value),
+                ),
+              ],
+            ),
           ),
         ],
       ), // This trailing comma makes auto-formatting nicer for build methods.
