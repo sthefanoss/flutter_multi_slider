@@ -16,14 +16,20 @@ class _CustomGestureDetector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ValueChanged<Offset> globalToLocalWrapper(ValueChanged<Offset>? callback) =>
+        (Offset globalOffset) {
+          final renderBox = context.findRenderObject()! as RenderBox;
+          callback?.call(renderBox.globalToLocal(globalOffset));
+        };
+
     return RawGestureDetector(
       gestures: {
         _CustomPanGestureRecognizer:
             GestureRecognizerFactoryWithHandlers<_CustomPanGestureRecognizer>(
           () => _CustomPanGestureRecognizer(
-            onPanStart: onPanStart,
-            onPanUpdate: onPanUpdate,
-            onPanEnd: onPanEnd,
+            onPanStart: globalToLocalWrapper(onPanStart),
+            onPanUpdate: globalToLocalWrapper(onPanUpdate),
+            onPanEnd: globalToLocalWrapper(onPanEnd),
           ),
           (_CustomPanGestureRecognizer instance) {},
         ),
@@ -34,9 +40,9 @@ class _CustomGestureDetector extends StatelessWidget {
 }
 
 class _CustomPanGestureRecognizer extends OneSequenceGestureRecognizer {
-  final ValueChanged<Offset>? onPanStart;
-  final ValueChanged<Offset>? onPanUpdate;
-  final ValueChanged<Offset>? onPanEnd;
+  final ValueChanged<Offset> onPanStart;
+  final ValueChanged<Offset> onPanUpdate;
+  final ValueChanged<Offset> onPanEnd;
 
   _CustomPanGestureRecognizer({
     required this.onPanStart,
@@ -53,13 +59,13 @@ class _CustomPanGestureRecognizer extends OneSequenceGestureRecognizer {
   @override
   void handleEvent(PointerEvent event) {
     if (event is PointerDownEvent) {
-      onPanStart?.call(event.position);
+      onPanStart.call(event.position);
     }
     if (event is PointerMoveEvent) {
-      onPanUpdate?.call(event.position);
+      onPanUpdate.call(event.position);
     }
     if (event is PointerUpEvent) {
-      onPanEnd?.call(event.position);
+      onPanEnd.call(event.position);
       stopTrackingPointer(event.pointer);
     }
   }
