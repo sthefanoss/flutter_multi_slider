@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import 'dart:math' as math;
+part of flutter_multi_slider;
 
 /// Used in [ValueRangePainterCallback] as parameter.
 /// Every range between the edges of [MultiSlider] generate an [ValueRange].
@@ -111,7 +110,7 @@ class _MultiSliderState extends State<MultiSlider> {
     return LayoutBuilder(
       builder: (context, BoxConstraints constraints) {
         _maxWidth = constraints.maxWidth;
-        return GestureDetector(
+        return _CustomGestureDetector(
           child: Container(
             constraints: constraints,
             width: double.infinity,
@@ -149,25 +148,25 @@ class _MultiSliderState extends State<MultiSlider> {
     );
   }
 
-  void _handleOnChangeStart(DragStartDetails details) {
+  void _handleOnChangeStart(Offset details) {
     double valuePosition = _convertPixelPositionToValue(
-      details.localPosition.dx,
+      details.dx,
     );
 
     int index = _findNearestValueIndex(valuePosition);
 
     setState(() => _selectedInputIndex = index);
 
-    final updatedValues = updateInternalValues(details.localPosition.dx);
+    final updatedValues = updateInternalValues(details.dx);
     widget.onChanged!(updatedValues);
     if (widget.onChangeStart != null) widget.onChangeStart!(updatedValues);
   }
 
-  void _handleOnChanged(DragUpdateDetails details) {
-    widget.onChanged!(updateInternalValues(details.localPosition.dx));
+  void _handleOnChanged(Offset details) {
+    widget.onChanged!(updateInternalValues(details.dx));
   }
 
-  void _handleOnChangeEnd(DragEndDetails details) {
+  void _handleOnChangeEnd(Offset details) {
     setState(() => _selectedInputIndex = null);
 
     if (widget.onChangeEnd != null) widget.onChangeEnd!(widget.values);
