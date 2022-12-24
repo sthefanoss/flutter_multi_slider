@@ -36,14 +36,17 @@ class MultiSlider extends StatefulWidget {
     this.horizontalPadding = 26.0,
     this.height = 45,
     this.divisions,
+    this.displayDivisions = true,
     this.valueRangePainterCallback,
     Key? key,
   })  : assert(divisions == null || divisions > 0),
         assert(max - min >= 0),
         range = max - min,
         super(key: key) {
+    // Creating a copy of values and sorting it in ascending order
     final valuesCopy = [...values]..sort();
 
+    // Checking if the copy matches the values
     for (int index = 0; index < valuesCopy.length; index++) {
       assert(
         valuesCopy[index] == values[index],
@@ -62,7 +65,7 @@ class MultiSlider extends StatefulWidget {
   /// [MultiSlider] minimum value.
   final double min;
 
-  /// Difference between [max] and [min]. Must be positive!
+  /// Difference between [max] and [min]. Must be non-negative!
   final double range;
 
   /// [MultiSlider] vertical dimension. Used by [GestureDetector] and [CustomPainter].
@@ -88,6 +91,9 @@ class MultiSlider extends StatefulWidget {
 
   /// Number of divisions for discrete Slider.
   final int? divisions;
+
+  /// Whether to display the lines indicating [divisions]
+  final bool displayDivisions;
 
   /// Used to decide how a line between values or the boundaries should be painted.
   /// Returns [bool] and pass an [ValueRange] object as parameter.
@@ -121,6 +127,7 @@ class _MultiSliderState extends State<MultiSlider> {
                 valueRangePainterCallback: widget.valueRangePainterCallback ??
                     _defaultDivisionPainterCallback,
                 divisions: widget.divisions,
+                displayDivisions: widget.displayDivisions,
                 isDisabled: isDisabled,
                 activeTrackColor: widget.color ??
                     sliderTheme.activeTrackColor ??
@@ -148,6 +155,8 @@ class _MultiSliderState extends State<MultiSlider> {
       },
     );
   }
+
+
 
   void _handleOnChangeStart(DragStartDetails details) {
     double valuePosition = _convertPixelPositionToValue(
@@ -250,8 +259,9 @@ class _MultiSliderState extends State<MultiSlider> {
     return minDifferenceFirstIndex;
   }
 
-  bool _defaultDivisionPainterCallback(ValueRange division) =>
-      !division.isFirst && !division.isLast;
+
+  bool _defaultDivisionPainterCallback(ValueRange range) => range.index % 2 == 1;
+
 }
 
 class _MultiSliderPainter extends CustomPainter {
@@ -262,6 +272,7 @@ class _MultiSliderPainter extends CustomPainter {
   final Paint bigCircleColorPaint;
   final Paint inactiveTrackColorPaint;
   final int? divisions;
+  final bool displayDivisions;
   final ValueRangePainterCallback valueRangePainterCallback;
 
   _MultiSliderPainter({
@@ -274,6 +285,7 @@ class _MultiSliderPainter extends CustomPainter {
     required this.selectedInputIndex,
     required this.horizontalPadding,
     required this.divisions,
+    required this.displayDivisions,
     required this.valueRangePainterCallback,
   })  : activeTrackColorPaint = _paintFromColor(
           isDisabled ? disabledActiveTrackColor : activeTrackColor,
@@ -356,7 +368,7 @@ class _MultiSliderPainter extends CustomPainter {
       );
     }
 
-    if (divisions != null) {
+    if (divisions != null && displayDivisions) {
       final divisionsList = List<double>.generate(
           divisions! + 1,
           (index) =>

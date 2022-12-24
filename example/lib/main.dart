@@ -7,9 +7,9 @@ void main() => runApp(MyApp());
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MaterialApp(
-        title: 'Flutter Demo',
-        home: MyHomePage(),
-      );
+    title: 'Flutter Demo',
+    home: MyHomePage(),
+  );
 }
 
 class MyHomePage extends StatefulWidget {
@@ -127,6 +127,7 @@ class WeekDaySchedule extends StatelessWidget {
             onChanged: enabled ? onChanged : null,
             valueRangePainterCallback: (range) => range.index % 2 == 1,
             divisions: 48,
+            displayDivisions: false,
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 19.0, vertical: 0),
