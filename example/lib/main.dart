@@ -128,6 +128,8 @@ class WeekDaySchedule extends StatelessWidget {
             valueRangePainterCallback: (range) => range.index % 2 == 1,
             divisions: 48,
             displayDivisions: false,
+            addOrRemove: true,
+            defaultRange: 0.1,
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 19.0, vertical: 0),

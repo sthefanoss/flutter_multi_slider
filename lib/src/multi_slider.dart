@@ -38,25 +38,33 @@ class MultiSlider extends StatefulWidget {
     this.divisions,
     this.displayDivisions = true,
     this.valueRangePainterCallback,
+    this.addOrRemove = false,
+    this.defaultRange,
     Key? key,
   })  : assert(divisions == null || divisions > 0),
         assert(max - min >= 0),
+        assert(defaultRange == null || addOrRemove),
+        assert(defaultRange != null || !addOrRemove),
         range = max - min,
         super(key: key) {
-    // Creating a copy of values and sorting it in ascending order
-    final valuesCopy = [...values]..sort();
+      // Creating a copy of values and sorting it in ascending order
+      final valuesCopy = [...values]..sort();
 
-    // Checking if the copy matches the values
-    for (int index = 0; index < valuesCopy.length; index++) {
-      assert(
-        valuesCopy[index] == values[index],
-        'MultiSlider: values must be in ascending order!',
-      );
+      // Checking if the copy matches the values
+      for (int index = 0; index < valuesCopy.length; index++) {
+        assert(
+          valuesCopy[index] == values[index],
+          'MultiSlider: values must be in ascending order!',
+        );
+
+      if(values.isNotEmpty){
+        assert(
+          values.first >= min && values.last <= max,
+          'MultiSlider: At least one value is outside of min/max boundaries!',
+        );
+      }
+      
     }
-    assert(
-      values.first >= min && values.last <= max,
-      'MultiSlider: At least one value is outside of min/max boundaries!',
-    );
   }
 
   /// [MultiSlider] maximum value.
@@ -92,12 +100,20 @@ class MultiSlider extends StatefulWidget {
   /// Number of divisions for discrete Slider.
   final int? divisions;
 
-  /// Whether to display the lines indicating [divisions]
+  /// Whether to display the lines indicating [divisions].
   final bool displayDivisions;
 
   /// Used to decide how a line between values or the boundaries should be painted.
   /// Returns [bool] and pass an [ValueRange] object as parameter.
   final ValueRangePainterCallback? valueRangePainterCallback;
+
+  /// Adds or removes a new pair of boundaries on double tap. When this is true, the 
+  /// [defaultRange] mustn't be null.
+  final bool addOrRemove; 
+
+  /// Default difference between values of two new boundaries added on double tap.
+  /// [addOrRemove] must be true when this is not null. 
+  final double? defaultRange;
 
   @override
   _MultiSliderState createState() => _MultiSliderState();
@@ -106,6 +122,8 @@ class MultiSlider extends StatefulWidget {
 class _MultiSliderState extends State<MultiSlider> {
   double? _maxWidth;
   int? _selectedInputIndex;
+  double? doubleTapPosition;
+
 
   @override
   Widget build(BuildContext context) {
@@ -151,11 +169,19 @@ class _MultiSliderState extends State<MultiSlider> {
           onPanStart: isDisabled ? null : _handleOnChangeStart,
           onPanUpdate: isDisabled ? null : _handleOnChanged,
           onPanEnd: isDisabled ? null : _handleOnChangeEnd,
+          onDoubleTapDown: isDisabled || !widget.addOrRemove 
+            ? null 
+            : _handleOnDoubleTapDown,
+          onDoubleTapCancel: isDisabled || !widget.addOrRemove 
+            ? null 
+            : _handleOnDoubleTapCancel,
+          onDoubleTap: isDisabled || !widget.addOrRemove 
+            ? null 
+            : _handleOnDoubleTap,
         );
       },
     );
   }
-
 
 
   void _handleOnChangeStart(DragStartDetails details) {
@@ -180,6 +206,133 @@ class _MultiSliderState extends State<MultiSlider> {
     setState(() => _selectedInputIndex = null);
 
     if (widget.onChangeEnd != null) widget.onChangeEnd!(widget.values);
+  }
+
+  void _handleOnDoubleTapDown(TapDownDetails details) {
+    doubleTapPosition = details.localPosition.dx;
+  }
+
+  void _handleOnDoubleTapCancel() {
+    doubleTapPosition = null;
+  }
+
+  void _handleOnDoubleTap() {
+    if(doubleTapPosition != null) {
+      // Check whether the double tap was on an empty fragment of the slider
+    
+      final values = <double>[
+        widget.min,
+        ...widget.values
+            .map<double>(widget.divisions == null
+                ? (v) => v
+                : (v) => _getDiscreteValue(v, widget.min, widget.max, widget.divisions!))
+            .toList(),
+        widget.max
+      ];
+      var valueRanges = List<ValueRange>.generate(
+        values.length - 1,
+        (index) => ValueRange(
+          values[index],
+          values[index + 1],
+          index,
+          index == 0,
+          index == values.length - 2,
+        ),
+      );
+
+      var valuePosition = _convertPixelPositionToValue(doubleTapPosition!);
+
+      bool isBetween = false;
+
+      var callback = widget.valueRangePainterCallback ?? _defaultDivisionPainterCallback;
+      
+      for (ValueRange valueRange in valueRanges) {
+        if(
+          valuePosition >= valueRange.start && 
+          valuePosition <= valueRange.end &&
+          callback(valueRange)
+        ) {
+          isBetween = true;
+          break;
+        }
+      }
+
+      // If the double tap was on an empty fragment add new values
+      if(!isBetween) {
+        var copiedValues = [...widget.values];
+
+        double upperLimit = copiedValues.firstWhere(
+          (e) => e > valuePosition,
+          orElse: () => widget.max,
+        );
+
+        double lowerLimit = copiedValues.lastWhere(
+          (e) => e < valuePosition,
+          orElse: () => widget.min,
+        );
+
+        double lower;
+        double upper;
+
+        if(lowerLimit < valuePosition - widget.defaultRange!/2) {
+          lower = (widget.divisions != null) 
+            ? _getDiscreteValue(
+              valuePosition - widget.defaultRange!/2, 
+              widget.min, 
+              widget.max, 
+              widget.divisions!
+            ) 
+            : valuePosition - widget.defaultRange!/2;
+        } else {
+          lower = lowerLimit;
+        }
+
+        if(upperLimit > valuePosition + widget.defaultRange!/2) {
+          upper = (widget.divisions != null) 
+            ? _getDiscreteValue(
+              valuePosition + widget.defaultRange!/2,
+              widget.min, 
+              widget.max, 
+              widget.divisions!
+            ) 
+            : valuePosition + widget.defaultRange!/2;
+        } else {
+          upper = upperLimit;
+        }
+
+        int lowerInsertIndex = copiedValues.lastIndexWhere(
+          (e) => e <= lower
+        ) + 1;
+        copiedValues.insert(lowerInsertIndex, lower);
+
+        int upperInsertIndex = copiedValues.indexWhere(
+          (e) => e >= upper
+        );
+        if (upperInsertIndex == -1) upperInsertIndex = copiedValues.length;
+        copiedValues.insert(upperInsertIndex, upper);
+
+        widget.onChanged!(copiedValues);
+        
+      // Else, remove existing pair of boundaries
+      } else {
+        var copiedValues = [...widget.values];
+
+        int upperIndex = copiedValues.indexWhere(
+          (e) => e >= valuePosition,
+        );
+
+        copiedValues.removeAt(upperIndex);
+
+        int lowerIndex = copiedValues.lastIndexWhere(
+          (e) => e <= valuePosition,
+        );
+
+        copiedValues.removeAt(lowerIndex);
+
+        widget.onChanged!(copiedValues);
+      }
+
+    } 
   }
 
   double _convertValueToPixelPosition(double value) {
