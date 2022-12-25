@@ -35,6 +35,28 @@ MultiSlider(
 MultiSlider(
     values: _myList,
     onChanged: (values) => setState(()=> _myList = values),
-    valueRangePainterCallback: (range) => range.index % 2 == 1,
 ),
 ```
+## Add or remove on double tap
+```dart
+MultiSlider(
+    values: _myList,
+    onChanged: (values) => setState(()=> _myList = values),
+    addOrRemove: true,
+    defaultRange: 0.1,
+),
+```
+<img src="https://github.com/Adam-Mazur/flutter_multi_slider/blob/new_branch/doubleTap.gif" width="250">
+
+## Add a tooltip
+
+```dart
+MultiSlider(
+    values: _myList,
+    onChanged: (values) => setState(()=> _myList = values),
+    showTooltip: true,
+    tooltipBuilder: (value) => value.toStringAsFixed(2),
+),
+```
+
+<img src="https://github.com/Adam-Mazur/flutter_multi_slider/blob/new_branch/tooltip.gif" width="250">
