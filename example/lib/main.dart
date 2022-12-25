@@ -1,15 +1,15 @@
-import 'package:example/time.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_multi_slider/flutter_multi_slider.dart';
+import 'package:flutter/material.dart';
+import 'package:example/time.dart';
 
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MaterialApp(
-        title: 'Flutter Demo',
-        home: MyHomePage(),
-      );
+    title: 'Flutter Demo',
+    home: MyHomePage(),
+  );
 }
 
 class MyHomePage extends StatefulWidget {
@@ -127,6 +127,14 @@ class WeekDaySchedule extends StatelessWidget {
             onChanged: enabled ? onChanged : null,
             valueRangePainterCallback: (range) => range.index % 2 == 1,
             divisions: 48,
+            displayDivisions: false,
+            addOrRemove: true,
+            defaultRange: 0.1,
+            showTooltip: true,
+            tooltipBuilder: (value) => value.toStringAsFixed(2),
+            tooltipTheme: CustomTooltipData(
+              textPadding: EdgeInsets.all(7),
+            ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 19.0, vertical: 0),
