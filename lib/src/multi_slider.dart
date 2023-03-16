@@ -33,8 +33,14 @@ class MultiSlider extends StatefulWidget {
     this.onChangeStart,
     this.onChangeEnd,
     this.color,
+    this.rangeColors,
+    this.thumbColor,
+    this.thumbRadius = 10,
     this.horizontalPadding = 26.0,
     this.height = 45,
+    this.activeTrackSize = 6,
+    this.inactiveTrackSize = 4,
+    this.indicator = false,
     this.divisions,
     this.valueRangePainterCallback,
     Key? key,
@@ -73,6 +79,24 @@ class MultiSlider extends StatefulWidget {
 
   /// Bar and indicators active color.
   final Color? color;
+
+  /// Bar range active colors.
+  final List<Color>? rangeColors;
+
+  /// Thumb radius.
+  final double thumbRadius;
+
+  /// Thumb color.
+  final Color? thumbColor;
+
+  /// Value indicator.
+  final bool indicator;
+
+  /// Active track size.
+  final double activeTrackSize;
+
+  /// Inactive track size.
+  final double inactiveTrackSize;
 
   /// List of ordered values which will be changed by user gestures with this widget.
   final List<double> values;
@@ -122,6 +146,11 @@ class _MultiSliderState extends State<MultiSlider> {
                     _defaultDivisionPainterCallback,
                 divisions: widget.divisions,
                 isDisabled: isDisabled,
+                rangeColors: widget.rangeColors,
+                thumbColor: widget.thumbColor ?? widget.color ??
+                    sliderTheme.activeTrackColor ??
+                    theme.colorScheme.primary,
+                thumbRadius: widget.thumbRadius,
                 activeTrackColor: widget.color ??
                     sliderTheme.activeTrackColor ??
                     theme.colorScheme.primary,
@@ -135,9 +164,12 @@ class _MultiSliderState extends State<MultiSlider> {
                     sliderTheme.disabledInactiveTrackColor ??
                         theme.colorScheme.onSurface.withOpacity(0.12),
                 selectedInputIndex: _selectedInputIndex,
-                values:
-                    widget.values.map(_convertValueToPixelPosition).toList(),
+                values: widget.values,
+                indicator: widget.indicator,
+                positions: widget.values.map(_convertValueToPixelPosition).toList(),
                 horizontalPadding: widget.horizontalPadding,
+                activeTrackSize: widget.activeTrackSize,
+                inactiveTrackSize: widget.inactiveTrackSize,
               ),
             ),
           ),
@@ -256,13 +288,20 @@ class _MultiSliderState extends State<MultiSlider> {
 
 class _MultiSliderPainter extends CustomPainter {
   final List<double> values;
+  final List<double> positions;
   final int? selectedInputIndex;
   final double horizontalPadding;
   final Paint activeTrackColorPaint;
+  final Paint thumbColorPaint;
   final Paint bigCircleColorPaint;
   final Paint inactiveTrackColorPaint;
   final int? divisions;
   final ValueRangePainterCallback valueRangePainterCallback;
+  final List<Color>? rangeColors;
+  final double thumbRadius;
+  final bool indicator;
+  final double activeTrackSize;
+  final double inactiveTrackSize;
 
   _MultiSliderPainter({
     required bool isDisabled,
@@ -270,25 +309,38 @@ class _MultiSliderPainter extends CustomPainter {
     required Color inactiveTrackColor,
     required Color disabledActiveTrackColor,
     required Color disabledInactiveTrackColor,
+    required Color thumbColor,
     required this.values,
+    required this.positions,
     required this.selectedInputIndex,
     required this.horizontalPadding,
     required this.divisions,
     required this.valueRangePainterCallback,
+    required this.rangeColors,
+    required this.thumbRadius,
+    required this.indicator,
+    required this.activeTrackSize,
+    required this.inactiveTrackSize,
   })  : activeTrackColorPaint = _paintFromColor(
           isDisabled ? disabledActiveTrackColor : activeTrackColor,
-          true,
+          activeTrackSize,
         ),
         inactiveTrackColorPaint = _paintFromColor(
           isDisabled ? disabledInactiveTrackColor : inactiveTrackColor,
+          inactiveTrackSize,
+        ),
+        thumbColorPaint = _paintFromColor(
+          thumbColor,
+          inactiveTrackSize,
         ),
         bigCircleColorPaint = _paintFromColor(
           activeTrackColor.withOpacity(0.20),
+          inactiveTrackSize,
         );
 
   @override
   void paint(Canvas canvas, Size size) {
-    final double halfHeight = size.height / 2;
+    final double baseLine = indicator ? size.height - thumbRadius : size.height / 2;
     final canvasStart = horizontalPadding;
     final canvasEnd = size.width - horizontalPadding;
 
@@ -318,11 +370,11 @@ class _MultiSliderPainter extends CustomPainter {
       );
     }
 
-    final valueRanges = _makeRanges(values, canvasStart, canvasEnd);
+    final valueRanges = _makeRanges(positions, canvasStart, canvasEnd);
 
     canvas.drawArc(
       Rect.fromCircle(
-        center: Offset(valueRanges.first.start, halfHeight),
+        center: Offset(valueRanges.first.start, baseLine),
         radius: valueRangePainterCallback(valueRanges.first) ? 3 : 2,
       ),
       math.pi / 2,
@@ -335,7 +387,7 @@ class _MultiSliderPainter extends CustomPainter {
 
     canvas.drawArc(
       Rect.fromCircle(
-        center: Offset(valueRanges.last.end, halfHeight),
+        center: Offset(valueRanges.last.end, baseLine),
         radius: valueRangePainterCallback(valueRanges.last) ? 3 : 2,
       ),
       -math.pi / 2,
@@ -347,12 +399,20 @@ class _MultiSliderPainter extends CustomPainter {
     );
 
     for (ValueRange valueRange in valueRanges) {
+      Color rangeColor = valueRangePainterCallback(valueRange)
+          ? activeTrackColorPaint.color
+          : inactiveTrackColorPaint.color;
+
+      if (rangeColors != null && valueRange.index < rangeColors!.length) {
+        rangeColor = rangeColors![valueRange.index];
+      }
+
+      final Paint rangePaint = _paintFromColor(rangeColor, valueRangePainterCallback(valueRange) ? activeTrackSize : inactiveTrackSize);
+
       canvas.drawLine(
-        Offset(valueRange.start, halfHeight),
-        Offset(valueRange.end, halfHeight),
-        valueRangePainterCallback(valueRange)
-            ? activeTrackColorPaint
-            : inactiveTrackColorPaint,
+        Offset(valueRange.start, baseLine),
+        Offset(valueRange.end, baseLine),
+        rangePaint,
       );
     }
 
@@ -368,7 +428,7 @@ class _MultiSliderPainter extends CustomPainter {
         );
 
         canvas.drawCircle(
-          Offset(x, halfHeight),
+          Offset(x, baseLine),
           1,
           _paintFromColor(valueRangePainterCallback(valueRange)
               ? Colors.white.withOpacity(0.5)
@@ -377,40 +437,44 @@ class _MultiSliderPainter extends CustomPainter {
       }
     }
 
-    for (int i = 0; i < values.length; i++) {
+    final textStyle = TextStyle(fontSize: 14);
+    final textPainter = TextPainter(textAlign: TextAlign.center, textDirection: TextDirection.ltr);
+
+    for (int i = 0; i < positions.length; i++) {
       double x = divisions == null
-          ? values[i]
-          : _getDiscreteValue(values[i], canvasStart, canvasEnd, divisions!);
-
-      canvas.drawCircle(
-        Offset(x, halfHeight),
-        10,
-        _paintFromColor(Colors.white),
-      );
-
-      canvas.drawCircle(
-        Offset(x, halfHeight),
-        10,
-        activeTrackColorPaint,
-      );
+          ? positions[i]
+          : _getDiscreteValue(positions[i], canvasStart, canvasEnd, divisions!);
 
       if (selectedInputIndex == i)
         canvas.drawCircle(
-          Offset(x, halfHeight),
-          22.5,
+          Offset(x, baseLine),
+          thumbRadius + 10,
           bigCircleColorPaint,
         );
+
+      if (indicator) {
+        // Draw value indicator
+        textPainter.text = TextSpan(text: values[i].toString(), style: textStyle);
+        textPainter.layout();
+        textPainter.paint(canvas, Offset(x - textPainter.width / 2, baseLine - thumbRadius - 30));
+      }
+
+      // Draw thumb
+      Path path = Path();
+      path.addOval(Rect.fromCircle(center: Offset(x, baseLine), radius: thumbRadius));
+      canvas.drawShadow(path, Colors.black, 3, true);
+      canvas.drawPath(path, thumbColorPaint);
     }
   }
 
   @override
   bool shouldRepaint(CustomPainter oldDelegate) => true;
 
-  static Paint _paintFromColor(Color color, [bool active = false]) {
+  static Paint _paintFromColor(Color color, [double strokeWidth = 6]) {
     return Paint()
       ..style = PaintingStyle.fill
       ..color = color
-      ..strokeWidth = active ? 6 : 4
+      ..strokeWidth = strokeWidth
       ..isAntiAlias = true;
   }
 }
