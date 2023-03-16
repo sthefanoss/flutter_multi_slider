@@ -34,6 +34,7 @@ class MultiSlider extends StatefulWidget {
     this.onChangeEnd,
     this.color,
     this.rangeColors,
+    this.thumbColor,
     this.horizontalPadding = 26.0,
     this.height = 45,
     this.divisions,
@@ -77,6 +78,9 @@ class MultiSlider extends StatefulWidget {
 
   /// Bar range active colors.
   final List<Color>? rangeColors;
+
+  /// Thumb color.
+  final Color? thumbColor;
 
   /// List of ordered values which will be changed by user gestures with this widget.
   final List<double> values;
@@ -127,6 +131,9 @@ class _MultiSliderState extends State<MultiSlider> {
                 divisions: widget.divisions,
                 isDisabled: isDisabled,
                 rangeColors: widget.rangeColors,
+                thumbColor: widget.thumbColor ?? widget.color ??
+                    sliderTheme.activeTrackColor ??
+                    theme.colorScheme.primary,
                 activeTrackColor: widget.color ??
                     sliderTheme.activeTrackColor ??
                     theme.colorScheme.primary,
@@ -264,6 +271,7 @@ class _MultiSliderPainter extends CustomPainter {
   final int? selectedInputIndex;
   final double horizontalPadding;
   final Paint activeTrackColorPaint;
+  final Paint thumbColorPaint;
   final Paint bigCircleColorPaint;
   final Paint inactiveTrackColorPaint;
   final int? divisions;
@@ -276,6 +284,7 @@ class _MultiSliderPainter extends CustomPainter {
     required Color inactiveTrackColor,
     required Color disabledActiveTrackColor,
     required Color disabledInactiveTrackColor,
+    required Color thumbColor,
     required this.values,
     required this.selectedInputIndex,
     required this.horizontalPadding,
@@ -288,6 +297,9 @@ class _MultiSliderPainter extends CustomPainter {
         ),
         inactiveTrackColorPaint = _paintFromColor(
           isDisabled ? disabledInactiveTrackColor : inactiveTrackColor,
+        ),
+        thumbColorPaint = _paintFromColor(
+          thumbColor,
         ),
         bigCircleColorPaint = _paintFromColor(
           activeTrackColor.withOpacity(0.20),
@@ -403,18 +415,17 @@ class _MultiSliderPainter extends CustomPainter {
         _paintFromColor(Colors.white),
       );
 
-      canvas.drawCircle(
-        Offset(x, halfHeight),
-        10,
-        activeTrackColorPaint,
-      );
-
       if (selectedInputIndex == i)
         canvas.drawCircle(
           Offset(x, halfHeight),
           22.5,
           bigCircleColorPaint,
         );
+
+      Path path = Path();
+      path.addOval(Rect.fromCircle(center: Offset(x, halfHeight), radius: 10));
+      canvas.drawShadow(path, Colors.black, 3, true);
+      canvas.drawPath(path, thumbColorPaint);
     }
   }
 
