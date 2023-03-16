@@ -38,6 +38,8 @@ class MultiSlider extends StatefulWidget {
     this.thumbRadius = 10,
     this.horizontalPadding = 26.0,
     this.height = 45,
+    this.activeTrackSize = 3,
+    this.inactiveTrackSize = 2,
     this.indicator = false,
     this.divisions,
     this.valueRangePainterCallback,
@@ -89,6 +91,12 @@ class MultiSlider extends StatefulWidget {
 
   /// Value indicator.
   final bool indicator;
+
+  /// Active track size.
+  final double activeTrackSize;
+
+  /// Inactive track size.
+  final double inactiveTrackSize;
 
   /// List of ordered values which will be changed by user gestures with this widget.
   final List<double> values;
@@ -160,6 +168,8 @@ class _MultiSliderState extends State<MultiSlider> {
                 indicator: widget.indicator,
                 positions: widget.values.map(_convertValueToPixelPosition).toList(),
                 horizontalPadding: widget.horizontalPadding,
+                activeTrackSize: widget.activeTrackSize,
+                inactiveTrackSize: widget.inactiveTrackSize,
               ),
             ),
           ),
@@ -290,6 +300,8 @@ class _MultiSliderPainter extends CustomPainter {
   final List<Color>? rangeColors;
   final double thumbRadius;
   final bool indicator;
+  final double activeTrackSize;
+  final double inactiveTrackSize;
 
   _MultiSliderPainter({
     required bool isDisabled,
@@ -307,6 +319,8 @@ class _MultiSliderPainter extends CustomPainter {
     required this.rangeColors,
     required this.thumbRadius,
     required this.indicator,
+    required this.activeTrackSize,
+    required this.inactiveTrackSize,
   })  : activeTrackColorPaint = _paintFromColor(
           isDisabled ? disabledActiveTrackColor : activeTrackColor,
           true,
@@ -358,7 +372,7 @@ class _MultiSliderPainter extends CustomPainter {
     canvas.drawArc(
       Rect.fromCircle(
         center: Offset(valueRanges.first.start, baseLine),
-        radius: valueRangePainterCallback(valueRanges.first) ? 3 : 2,
+        radius: valueRangePainterCallback(valueRanges.first) ? activeTrackSize : inactiveTrackSize,
       ),
       math.pi / 2,
       math.pi,
@@ -371,7 +385,7 @@ class _MultiSliderPainter extends CustomPainter {
     canvas.drawArc(
       Rect.fromCircle(
         center: Offset(valueRanges.last.end, baseLine),
-        radius: valueRangePainterCallback(valueRanges.last) ? 3 : 2,
+        radius: valueRangePainterCallback(valueRanges.last) ? activeTrackSize : inactiveTrackSize,
       ),
       -math.pi / 2,
       math.pi,
