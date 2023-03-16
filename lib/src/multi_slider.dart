@@ -38,6 +38,7 @@ class MultiSlider extends StatefulWidget {
     this.thumbRadius = 10,
     this.horizontalPadding = 26.0,
     this.height = 45,
+    this.indicator = false,
     this.divisions,
     this.valueRangePainterCallback,
     Key? key,
@@ -85,6 +86,9 @@ class MultiSlider extends StatefulWidget {
 
   /// Thumb color.
   final Color? thumbColor;
+
+  /// Value indicator.
+  final bool indicator;
 
   /// List of ordered values which will be changed by user gestures with this widget.
   final List<double> values;
@@ -153,6 +157,7 @@ class _MultiSliderState extends State<MultiSlider> {
                         theme.colorScheme.onSurface.withOpacity(0.12),
                 selectedInputIndex: _selectedInputIndex,
                 values: widget.values,
+                indicator: widget.indicator,
                 positions: widget.values.map(_convertValueToPixelPosition).toList(),
                 horizontalPadding: widget.horizontalPadding,
               ),
@@ -284,6 +289,7 @@ class _MultiSliderPainter extends CustomPainter {
   final ValueRangePainterCallback valueRangePainterCallback;
   final List<Color>? rangeColors;
   final double thumbRadius;
+  final bool indicator;
 
   _MultiSliderPainter({
     required bool isDisabled,
@@ -300,6 +306,7 @@ class _MultiSliderPainter extends CustomPainter {
     required this.valueRangePainterCallback,
     required this.rangeColors,
     required this.thumbRadius,
+    required this.indicator,
   })  : activeTrackColorPaint = _paintFromColor(
           isDisabled ? disabledActiveTrackColor : activeTrackColor,
           true,
@@ -316,7 +323,7 @@ class _MultiSliderPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final double baseLine = size.height - thumbRadius;
+    final double baseLine = indicator ? size.height - thumbRadius : size.height / 2;
     final canvasStart = horizontalPadding;
     final canvasEnd = size.width - horizontalPadding;
 
@@ -413,7 +420,6 @@ class _MultiSliderPainter extends CustomPainter {
       }
     }
 
-    // Draw thumbs and value indicators
     final textStyle = TextStyle(fontSize: 14);
     final textPainter = TextPainter(textAlign: TextAlign.center, textDirection: TextDirection.ltr);
 
@@ -429,10 +435,12 @@ class _MultiSliderPainter extends CustomPainter {
           bigCircleColorPaint,
         );
 
-      // Draw value indicator
-      textPainter.text = TextSpan(text: values[i].toString(), style: textStyle);
-      textPainter.layout();
-      textPainter.paint(canvas, Offset(x - textPainter.width / 2, baseLine - thumbRadius - 30));
+      if (indicator) {
+        // Draw value indicator
+        textPainter.text = TextSpan(text: values[i].toString(), style: textStyle);
+        textPainter.layout();
+        textPainter.paint(canvas, Offset(x - textPainter.width / 2, baseLine - thumbRadius - 30));
+      }
 
       // Draw thumb
       Path path = Path();
