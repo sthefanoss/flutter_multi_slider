@@ -323,16 +323,19 @@ class _MultiSliderPainter extends CustomPainter {
     required this.inactiveTrackSize,
   })  : activeTrackColorPaint = _paintFromColor(
           isDisabled ? disabledActiveTrackColor : activeTrackColor,
-          true,
+          activeTrackSize,
         ),
         inactiveTrackColorPaint = _paintFromColor(
           isDisabled ? disabledInactiveTrackColor : inactiveTrackColor,
+          inactiveTrackSize,
         ),
         thumbColorPaint = _paintFromColor(
           thumbColor,
+          inactiveTrackSize,
         ),
         bigCircleColorPaint = _paintFromColor(
           activeTrackColor.withOpacity(0.20),
+          inactiveTrackSize,
         );
 
   @override
@@ -372,7 +375,7 @@ class _MultiSliderPainter extends CustomPainter {
     canvas.drawArc(
       Rect.fromCircle(
         center: Offset(valueRanges.first.start, baseLine),
-        radius: valueRangePainterCallback(valueRanges.first) ? activeTrackSize : inactiveTrackSize,
+        radius: valueRangePainterCallback(valueRanges.first) ? 3 : 2,
       ),
       math.pi / 2,
       math.pi,
@@ -385,7 +388,7 @@ class _MultiSliderPainter extends CustomPainter {
     canvas.drawArc(
       Rect.fromCircle(
         center: Offset(valueRanges.last.end, baseLine),
-        radius: valueRangePainterCallback(valueRanges.last) ? activeTrackSize : inactiveTrackSize,
+        radius: valueRangePainterCallback(valueRanges.last) ? 3 : 2,
       ),
       -math.pi / 2,
       math.pi,
@@ -404,7 +407,7 @@ class _MultiSliderPainter extends CustomPainter {
         rangeColor = rangeColors![valueRange.index];
       }
 
-      final Paint rangePaint = _paintFromColor(rangeColor, valueRangePainterCallback(valueRange));
+      final Paint rangePaint = _paintFromColor(rangeColor, valueRangePainterCallback(valueRange) ? activeTrackSize : inactiveTrackSize);
 
       canvas.drawLine(
         Offset(valueRange.start, baseLine),
@@ -467,11 +470,11 @@ class _MultiSliderPainter extends CustomPainter {
   @override
   bool shouldRepaint(CustomPainter oldDelegate) => true;
 
-  static Paint _paintFromColor(Color color, [bool active = false]) {
+  static Paint _paintFromColor(Color color, [double strokeWidth = 6]) {
     return Paint()
       ..style = PaintingStyle.fill
       ..color = color
-      ..strokeWidth = active ? 6 : 4
+      ..strokeWidth = strokeWidth
       ..isAntiAlias = true;
   }
 }
