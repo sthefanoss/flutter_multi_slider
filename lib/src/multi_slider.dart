@@ -33,6 +33,7 @@ class MultiSlider extends StatefulWidget {
     this.onChangeStart,
     this.onChangeEnd,
     this.color,
+    this.rangeColors,
     this.horizontalPadding = 26.0,
     this.height = 45,
     this.divisions,
@@ -73,6 +74,9 @@ class MultiSlider extends StatefulWidget {
 
   /// Bar and indicators active color.
   final Color? color;
+
+  /// Bar range active colors.
+  final List<Color>? rangeColors;
 
   /// List of ordered values which will be changed by user gestures with this widget.
   final List<double> values;
@@ -122,6 +126,7 @@ class _MultiSliderState extends State<MultiSlider> {
                     _defaultDivisionPainterCallback,
                 divisions: widget.divisions,
                 isDisabled: isDisabled,
+                rangeColors: widget.rangeColors,
                 activeTrackColor: widget.color ??
                     sliderTheme.activeTrackColor ??
                     theme.colorScheme.primary,
@@ -263,6 +268,7 @@ class _MultiSliderPainter extends CustomPainter {
   final Paint inactiveTrackColorPaint;
   final int? divisions;
   final ValueRangePainterCallback valueRangePainterCallback;
+  final List<Color>? rangeColors;
 
   _MultiSliderPainter({
     required bool isDisabled,
@@ -275,6 +281,7 @@ class _MultiSliderPainter extends CustomPainter {
     required this.horizontalPadding,
     required this.divisions,
     required this.valueRangePainterCallback,
+    required this.rangeColors,
   })  : activeTrackColorPaint = _paintFromColor(
           isDisabled ? disabledActiveTrackColor : activeTrackColor,
           true,
@@ -347,12 +354,20 @@ class _MultiSliderPainter extends CustomPainter {
     );
 
     for (ValueRange valueRange in valueRanges) {
+      Color rangeColor = valueRangePainterCallback(valueRange)
+          ? activeTrackColorPaint.color
+          : inactiveTrackColorPaint.color;
+
+      if (rangeColors != null && valueRange.index < rangeColors!.length) {
+        rangeColor = rangeColors![valueRange.index];
+      }
+
+      final Paint rangePaint = _paintFromColor(rangeColor, valueRangePainterCallback(valueRange));
+
       canvas.drawLine(
         Offset(valueRange.start, halfHeight),
         Offset(valueRange.end, halfHeight),
-        valueRangePainterCallback(valueRange)
-            ? activeTrackColorPaint
-            : inactiveTrackColorPaint,
+        rangePaint,
       );
     }
 
