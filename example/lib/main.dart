@@ -2,17 +2,21 @@ import 'package:example/time.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_multi_slider/flutter_multi_slider.dart';
 
-void main() => runApp(MyApp());
+void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
   @override
-  Widget build(BuildContext context) => MaterialApp(
+  Widget build(BuildContext context) => const MaterialApp(
         title: 'Flutter Demo',
         home: MyHomePage(),
       );
 }
 
 class MyHomePage extends StatefulWidget {
+  const MyHomePage({Key? key}) : super(key: key);
+
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
@@ -33,7 +37,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('MultiSlider'),
+        title: const Text('MultiSlider'),
       ),
       body: ListView(
         children: <Widget>[
@@ -100,7 +104,7 @@ class WeekDaySchedule extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final chartTextFont = TextStyle(fontSize: 12);
+    const chartTextFont = TextStyle(fontSize: 12);
     return Card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -112,7 +116,7 @@ class WeekDaySchedule extends StatelessWidget {
                 Expanded(
                   child: Text(
                     weekDay + ' schedule',
-                    style: TextStyle(
+                    style: const TextStyle(
                         color: Colors.blue,
                         fontWeight: FontWeight.w600,
                         fontSize: 18),
@@ -132,7 +136,7 @@ class WeekDaySchedule extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 19.0, vertical: 0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
+              children: const [
                 Text('0h', style: chartTextFont),
                 Text('6h', style: chartTextFont),
                 Text('12h', style: chartTextFont),
@@ -141,7 +145,7 @@ class WeekDaySchedule extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           if (enabled) ...[
             for (int index = 0; index < values.length; index += 2)
               Padding(
@@ -151,19 +155,19 @@ class WeekDaySchedule extends StatelessWidget {
                 ),
               ),
           ] else
-            Padding(
-              padding: const EdgeInsets.only(left: 8, bottom: 2),
+            const Padding(
+              padding: EdgeInsets.only(left: 8, bottom: 2),
               child: Text('No shifts today.'),
             ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
         ],
       ),
     );
   }
 }
 
-final start = Time(hours: 0, minutes: 0);
+const start = Time(hours: 0, minutes: 0);
 
-final end = Time(hours: 24, minutes: 0);
+const end = Time(hours: 24, minutes: 0);
 
 Time lerpTime(double x) => start + (end - start) * x;
