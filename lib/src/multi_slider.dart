@@ -102,16 +102,23 @@ class MultiSlider extends StatefulWidget {
 
 class _MultiSliderState extends State<MultiSlider> {
   late double _maxWidth;
+  late ThemeData _theme;
+  late SliderThemeData _sliderTheme;
+
   int? _selectedInputIndex;
 
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final sliderTheme = SliderTheme.of(context);
+  void didChangeDependencies() {
+    _theme = Theme.of(context);
+    _sliderTheme = SliderTheme.of(context);
+    super.didChangeDependencies();
+  }
 
+  @override
+  Widget build(BuildContext context) {
     final bool isDisabled = widget.onChanged == null || widget.range == 0;
-    final indicatorTextTheme = theme.textTheme.labelMedium;
-    final selectedIndicatorTextTheme = theme.textTheme.bodyText1;
+    final indicatorTextTheme = _theme.textTheme.labelMedium;
+    final selectedIndicatorTextTheme = _theme.textTheme.bodyText1;
 
     IndicatorBuilder? indicator, selectedIndicator;
     if (widget.indicator != null) {
@@ -152,21 +159,21 @@ class _MultiSliderState extends State<MultiSlider> {
                 rangeColors: widget.rangeColors,
                 thumbColor: widget.thumbColor ??
                     widget.color ??
-                    sliderTheme.activeTrackColor ??
-                    theme.colorScheme.primary,
+                    _sliderTheme.activeTrackColor ??
+                    _theme.colorScheme.primary,
                 thumbRadius: widget.thumbRadius,
                 activeTrackColor: widget.color ??
-                    sliderTheme.activeTrackColor ??
-                    theme.colorScheme.primary,
+                    _sliderTheme.activeTrackColor ??
+                    _theme.colorScheme.primary,
                 inactiveTrackColor: widget.color?.withOpacity(0.24) ??
-                    sliderTheme.inactiveTrackColor ??
-                    theme.colorScheme.primary.withOpacity(0.24),
+                    _sliderTheme.inactiveTrackColor ??
+                    _theme.colorScheme.primary.withOpacity(0.24),
                 disabledActiveTrackColor:
-                    sliderTheme.disabledActiveTrackColor ??
-                        theme.colorScheme.onSurface.withOpacity(0.40),
+                    _sliderTheme.disabledActiveTrackColor ??
+                        _theme.colorScheme.onSurface.withOpacity(0.40),
                 disabledInactiveTrackColor:
-                    sliderTheme.disabledInactiveTrackColor ??
-                        theme.colorScheme.onSurface.withOpacity(0.12),
+                    _sliderTheme.disabledInactiveTrackColor ??
+                        _theme.colorScheme.onSurface.withOpacity(0.12),
                 selectedInputIndex: _selectedInputIndex,
                 values: widget.values,
                 indicator: indicator,
