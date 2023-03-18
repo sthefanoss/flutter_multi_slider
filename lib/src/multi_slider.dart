@@ -56,10 +56,16 @@ class MultiSlider extends StatefulWidget {
   /// Thumb color.
   final Color? thumbColor;
 
-  /// Value indicator.
+  /// Default indicator builder. Used to draw values, even if user is not
+  /// interacting with this component. This is null by default, so you have to
+  /// use [defaultIndicator] or define your own if you want to display values.
   final IndicatorBuilder? indicator;
 
-  /// Value indicator.
+  /// Selected indicator builder. Used to draw only the selected value.
+  /// [defaultIndicator] is used by default. You can define your own or
+  /// set [null] to not draw anything. If [indicator] is set and
+  /// [selectedIndicator] is null, then [indicator] will be used to
+  /// draw selected value indicator.
   final IndicatorBuilder? selectedIndicator;
 
   /// Active track size.
@@ -90,6 +96,7 @@ class MultiSlider extends StatefulWidget {
   /// [TextDirection] used on [indicator] and [selectedIndicator] drawing.
   final TextDirection textDirection;
 
+  /// Height offset used in [indicator] and [selectedIndicator].
   final double textHeightOffset;
 
   static IndicatorOptions defaultIndicator(double value, int index) {
