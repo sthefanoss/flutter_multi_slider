@@ -129,7 +129,6 @@ class WeekDaySchedule extends StatelessWidget {
           MultiSlider(
             values: values,
             onChanged: enabled ? onChanged : null,
-            valueRangePainterCallback: (range) => range.index % 2 == 1,
             divisions: 48,
           ),
           Padding(
