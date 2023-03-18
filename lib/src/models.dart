@@ -28,8 +28,13 @@ class IndicatorOptions {
     this.draw = true,
   });
 
+  /// Used to define how [value] will be formatted.
   final String Function(double value) formatter;
+
+  /// [TextStyle] used to draw formatted [value]
   final TextStyle? style;
+
+  /// Use to choose if indicator will be drawn or not.
   final bool draw;
 
   static String defaultFormatter(double value) => value.toStringAsPrecision(2);
