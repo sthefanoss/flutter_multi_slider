@@ -70,9 +70,16 @@ class TrackbarOptions {
 }
 
 class ThumbValue {
-  const ThumbValue(this.index, this.value, this.isSelected);
+  const ThumbValue(
+    this.index,
+    this.value,
+    this.isSelected,
+  );
+
   final int index;
+
   final double value;
+
   final bool isSelected;
 }
 
@@ -84,6 +91,8 @@ class ThumbOptions {
   });
 
   final double? radius;
+
   final Color? color;
+
   final double? elevation;
 }

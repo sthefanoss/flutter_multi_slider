@@ -109,6 +109,8 @@ class MultiSlider extends StatefulWidget {
   /// Height offset used in [indicator] and [selectedIndicator].
   final double textHeightOffset;
 
+  /// Use to set custom color, elevation and radius for each thumb indicator
+  /// individually.
   final ThumbBuilder thumbBuilder;
 
   static IndicatorOptions defaultIndicator(ThumbValue value) {
@@ -150,21 +152,21 @@ class _MultiSliderState extends State<MultiSlider> {
     IndicatorBuilder? indicator, selectedIndicator;
     if (widget.indicator != null) {
       indicator = selectedIndicator = (value) {
-        final f = widget.indicator!(value);
+        final currentValue = widget.indicator!(value);
         return IndicatorOptions(
-          draw: f.draw,
-          formatter: f.formatter,
-          style: indicatorTextTheme?.copyFromOther(f.style),
+          draw: currentValue.draw,
+          formatter: currentValue.formatter,
+          style: indicatorTextTheme?.copyFromOther(currentValue.style),
         );
       };
     }
     if (widget.selectedIndicator != null) {
       selectedIndicator = (value) {
-        final f = widget.selectedIndicator!(value);
+        final currentValue = widget.selectedIndicator!(value);
         return IndicatorOptions(
-          draw: f.draw,
-          formatter: f.formatter,
-          style: selectedIndicatorTextTheme?.copyFromOther(f.style),
+          draw: currentValue.draw,
+          formatter: currentValue.formatter,
+          style: selectedIndicatorTextTheme?.copyFromOther(currentValue.style),
         );
       };
     }
@@ -194,11 +196,13 @@ class _MultiSliderState extends State<MultiSlider> {
         _sliderTheme.disabledInactiveTrackColor ??
             _theme.colorScheme.onSurface.withOpacity(0.12);
 
-    final activeTrackColor =
-        isDisabled ? disabledActiveTrackColor : enabledActiveTrackColor;
+    final activeTrackColor = isDisabled //
+        ? disabledActiveTrackColor
+        : enabledActiveTrackColor;
 
-    final inactiveTrackColor =
-        isDisabled ? disabledInactiveTrackColor : enabledInactiveTrackColor;
+    final inactiveTrackColor = isDisabled //
+        ? disabledInactiveTrackColor
+        : enabledInactiveTrackColor;
 
     TrackbarOptions trackbarBuilder(ValueRange v) {
       final currentValue = widget.trackbarBuilder.call(v);
@@ -219,13 +223,13 @@ class _MultiSliderState extends State<MultiSlider> {
       );
     }
 
-    ThumbOptions fffsf(ThumbValue value) {
-      final ff = widget.thumbBuilder(value);
+    ThumbOptions thumbBuilder(ThumbValue value) {
+      final currentValue = widget.thumbBuilder(value);
 
       return ThumbOptions(
-        color: ff.color ?? thumbColor,
-        elevation: ff.elevation ?? (value.isSelected ? 3 : 0),
-        radius: ff.radius ?? widget.thumbRadius,
+        color: currentValue.color ?? thumbColor,
+        elevation: currentValue.elevation ?? (value.isSelected ? 3 : 0),
+        radius: currentValue.radius ?? widget.thumbRadius,
       );
     }
 
@@ -246,15 +250,16 @@ class _MultiSliderState extends State<MultiSlider> {
                 values: widget.values,
                 indicator: indicator,
                 selectedIndicator: selectedIndicator,
-                positions:
-                    widget.values.map(_convertValueToPixelPosition).toList(),
                 horizontalPadding: widget.horizontalPadding,
                 activeTrackSize: widget.activeTrackSize,
                 inactiveTrackSize: widget.inactiveTrackSize,
                 textDirection: widget.textDirection,
                 textHeightOffset: widget.textHeightOffset,
-                thumbBuilder: fffsf,
+                thumbBuilder: thumbBuilder,
                 thumbColor: thumbColor,
+                positions: widget.values //
+                    .map(_convertValueToPixelPosition)
+                    .toList(),
               ),
             ),
           ),
@@ -272,7 +277,7 @@ class _MultiSliderState extends State<MultiSlider> {
       details.localPosition.dx,
     );
 
-    int index = _findNearestValueIndex(valuePosition);
+    int index = findNearestValueIndex(valuePosition, widget.values);
 
     setState(() => _selectedInputIndex = index);
 
@@ -344,27 +349,5 @@ class _MultiSliderState extends State<MultiSlider> {
     return _selectedInputIndex == widget.values.length - 1
         ? widget.max
         : widget.values[_selectedInputIndex! + 1];
-  }
-
-  int _findNearestValueIndex(double convertedPosition) {
-    if (widget.values.length == 1) return 0;
-
-    List<double> differences = widget.values
-        .map<double>((double value) => (value - convertedPosition).abs())
-        .toList();
-    double minDifference = differences.reduce(
-      (previousValue, value) => value < previousValue ? value : previousValue,
-    );
-
-    int minDifferenceFirstIndex = differences.indexOf(minDifference);
-    int minDifferenceLastIndex = differences.lastIndexOf(minDifference);
-
-    bool hasCollision = minDifferenceLastIndex != minDifferenceFirstIndex;
-
-    if (hasCollision &&
-        (convertedPosition > widget.values[minDifferenceFirstIndex])) {
-      return minDifferenceLastIndex;
-    }
-    return minDifferenceFirstIndex;
   }
 }
