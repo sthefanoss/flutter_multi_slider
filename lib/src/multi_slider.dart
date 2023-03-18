@@ -188,15 +188,16 @@ class _MultiSliderState extends State<MultiSlider> {
               ),
             ),
           ),
-          onPanStart: isDisabled ? null : _handleOnChangeStart,
+          onPanDown: isDisabled ? null : _onPanDown,
           onPanUpdate: isDisabled ? null : _handleOnChanged,
-          onPanEnd: isDisabled ? null : _handleOnChangeEnd,
+          onPanCancel: isDisabled ? null : _handleOnChangeEnd,
+          onPanEnd: isDisabled ? null : (_) => _handleOnChangeEnd(),
         );
       },
     );
   }
 
-  void _handleOnChangeStart(DragStartDetails details) {
+  void _onPanDown(DragDownDetails details) {
     double valuePosition = _convertPixelPositionToValue(
       details.localPosition.dx,
     );
@@ -207,17 +208,17 @@ class _MultiSliderState extends State<MultiSlider> {
 
     final updatedValues = updateInternalValues(details.localPosition.dx);
     widget.onChanged!(updatedValues);
-    if (widget.onChangeStart != null) widget.onChangeStart!(updatedValues);
+    widget.onChangeStart?.call(updatedValues);
   }
 
   void _handleOnChanged(DragUpdateDetails details) {
     widget.onChanged!(updateInternalValues(details.localPosition.dx));
   }
 
-  void _handleOnChangeEnd(DragEndDetails details) {
+  void _handleOnChangeEnd() {
     setState(() => _selectedInputIndex = null);
 
-    if (widget.onChangeEnd != null) widget.onChangeEnd!(widget.values);
+    widget.onChangeEnd?.call(widget.values);
   }
 
   double _convertValueToPixelPosition(double value) {
