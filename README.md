@@ -30,3 +30,6 @@ MultiSlider(
     valueRangePainterCallback: (range) => range.index % 2 == 1,
 ),
 ```
+
+# Thanks
+- [savadodesigns](https://github.com/savadodesigns)
