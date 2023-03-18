@@ -1,11 +1,11 @@
 name: flutter_multi_slider
 description: A custom Slider which accepts a list of ordered values. It's meant to be as simple as the original Slider!
-version: 1.1.0
+version: 2.0.0
 homepage: https://github.com/sthefanoss/flutter_multi_slider
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
-  flutter: ">=1.17.0"
+  flutter: ">=2.10.5"
 
 dependencies:
   flutter:
