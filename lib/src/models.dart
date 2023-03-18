@@ -1,6 +1,6 @@
 part of flutter_multi_slider;
 
-/// Used in [ValueRangePainterCallback] as parameter.
+/// Used in [TrackbarBuilder] as parameter.
 /// Every range between the edges of [MultiSlider] generate an [ValueRange].
 /// Do NOT be mistaken with discrete intervals made by [divisions]!
 class ValueRange {
@@ -10,6 +10,8 @@ class ValueRange {
     this.index,
     this.isFirst,
     this.isLast,
+    this.isEven,
+    this.isOdd,
   );
 
   final double start;
@@ -17,6 +19,8 @@ class ValueRange {
   final int index;
   final bool isFirst;
   final bool isLast;
+  final bool isEven;
+  final bool isOdd;
 
   bool contains(double x) => x >= start && x <= end;
 }
@@ -49,4 +53,37 @@ class IndicatorOptions {
         style: style ?? this.style,
         draw: draw ?? this.draw,
       );
+}
+
+class TrackbarOptions {
+  const TrackbarOptions({
+    this.color,
+    this.size,
+    required this.isActive,
+  });
+
+  final double? size;
+
+  final Color? color;
+
+  final bool isActive;
+}
+
+class ThumbValue {
+  const ThumbValue(this.index, this.value, this.isSelected);
+  final int index;
+  final double value;
+  final bool isSelected;
+}
+
+class ThumbOptions {
+  const ThumbOptions({
+    this.radius,
+    this.color,
+    this.elevation,
+  });
+
+  final double? radius;
+  final Color? color;
+  final double? elevation;
 }

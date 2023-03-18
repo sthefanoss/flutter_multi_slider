@@ -1,5 +1,7 @@
 part of flutter_multi_slider;
 
-typedef ValueRangePainterCallback = bool Function(ValueRange valueRange);
+typedef TrackbarBuilder = TrackbarOptions Function(ValueRange valueRange);
 
-typedef IndicatorBuilder = IndicatorOptions Function(double value, int index);
+typedef IndicatorBuilder = IndicatorOptions Function(ThumbValue value);
+
+typedef ThumbBuilder = ThumbOptions Function(ThumbValue value);
