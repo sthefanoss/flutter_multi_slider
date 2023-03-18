@@ -50,10 +50,3 @@ class IndicatorOptions {
         draw: draw ?? this.draw,
       );
 }
-
-class Foo {
-  Foo({this.color, required this.isBold});
-
-  final Color? color;
-  final bool isBold;
-}
