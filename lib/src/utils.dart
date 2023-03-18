@@ -28,3 +28,25 @@ extension TextStyleExtension on TextStyle {
           overflow: other.overflow,
         );
 }
+
+/// TODO any way to optimize it?!?
+int findNearestValueIndex(double convertedPosition, List<double> list) {
+  if (list.length == 1) return 0;
+
+  List<double> differences = list
+      .map<double>((double value) => (value - convertedPosition).abs())
+      .toList();
+  double minDifference = differences.reduce(
+    (previousValue, value) => value < previousValue ? value : previousValue,
+  );
+
+  int minDifferenceFirstIndex = differences.indexOf(minDifference);
+  int minDifferenceLastIndex = differences.lastIndexOf(minDifference);
+
+  bool hasCollision = minDifferenceLastIndex != minDifferenceFirstIndex;
+
+  if (hasCollision && (convertedPosition > list[minDifferenceFirstIndex])) {
+    return minDifferenceLastIndex;
+  }
+  return minDifferenceFirstIndex;
+}

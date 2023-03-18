@@ -5,58 +5,35 @@ class _MultiSliderPainter extends CustomPainter {
   final List<double> positions;
   final int? selectedInputIndex;
   final double horizontalPadding;
-  final Paint activeTrackColorPaint;
-  final Paint thumbColorPaint;
-  final Paint bigCircleColorPaint;
-  final Paint inactiveTrackColorPaint;
   final int? divisions;
-  final ValueRangePainterCallback valueRangePainterCallback;
+  final TrackbarBuilder trackbarBuilder;
   final List<Color>? rangeColors;
-  final double thumbRadius;
   final IndicatorBuilder? indicator;
   final IndicatorBuilder? selectedIndicator;
+  final ThumbBuilder thumbBuilder;
   final double activeTrackSize;
   final double inactiveTrackSize;
   final TextDirection textDirection;
   final double textHeightOffset;
+  final Color thumbColor;
 
   _MultiSliderPainter({
-    required bool isDisabled,
-    required Color activeTrackColor,
-    required Color inactiveTrackColor,
-    required Color disabledActiveTrackColor,
-    required Color disabledInactiveTrackColor,
-    required Color thumbColor,
     required this.values,
     required this.positions,
     required this.selectedIndicator,
     required this.selectedInputIndex,
     required this.horizontalPadding,
     required this.divisions,
-    required this.valueRangePainterCallback,
+    required this.trackbarBuilder,
     required this.rangeColors,
-    required this.thumbRadius,
     required this.indicator,
     required this.activeTrackSize,
     required this.inactiveTrackSize,
     required this.textDirection,
     required this.textHeightOffset,
-  })  : activeTrackColorPaint = _paintFromColor(
-          isDisabled ? disabledActiveTrackColor : activeTrackColor,
-          activeTrackSize,
-        ),
-        inactiveTrackColorPaint = _paintFromColor(
-          isDisabled ? disabledInactiveTrackColor : inactiveTrackColor,
-          inactiveTrackSize,
-        ),
-        thumbColorPaint = _paintFromColor(
-          thumbColor,
-          inactiveTrackSize,
-        ),
-        bigCircleColorPaint = _paintFromColor(
-          activeTrackColor.withOpacity(0.20),
-          inactiveTrackSize,
-        );
+    required this.thumbBuilder,
+    required this.thumbColor,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -86,52 +63,40 @@ class _MultiSliderPainter extends CustomPainter {
           index,
           index == 0,
           index == values.length - 2,
+          index % 2 == 0,
+          index % 2 == 1,
         ),
       );
     }
 
     final valueRanges = _makeRanges(positions, canvasStart, canvasEnd);
-
+    final fistDot = trackbarBuilder(valueRanges.first);
+    final lastDot = trackbarBuilder(valueRanges.last);
     canvas.drawArc(
       Rect.fromCircle(
         center: Offset(valueRanges.first.start, baseLine),
-        radius: valueRangePainterCallback(valueRanges.first) ? 3 : 2,
+        radius: fistDot.size! / 2,
       ),
       math.pi / 2,
       math.pi,
       true,
-      valueRangePainterCallback(valueRanges.first)
-          ? activeTrackColorPaint
-          : inactiveTrackColorPaint,
+      _paintFromColor(fistDot.color!, 0),
     );
 
     canvas.drawArc(
       Rect.fromCircle(
         center: Offset(valueRanges.last.end, baseLine),
-        radius: valueRangePainterCallback(valueRanges.last) ? 3 : 2,
+        radius: lastDot.size! / 2,
       ),
       -math.pi / 2,
       math.pi,
       true,
-      valueRangePainterCallback(valueRanges.last)
-          ? activeTrackColorPaint
-          : inactiveTrackColorPaint,
+      _paintFromColor(lastDot.color!, 0),
     );
 
-    for (ValueRange valueRange in valueRanges) {
-      Color rangeColor = valueRangePainterCallback(valueRange)
-          ? activeTrackColorPaint.color
-          : inactiveTrackColorPaint.color;
-
-      if (rangeColors != null && valueRange.index < rangeColors!.length) {
-        rangeColor = rangeColors![valueRange.index];
-      }
-
-      final Paint rangePaint = _paintFromColor(
-          rangeColor,
-          valueRangePainterCallback(valueRange)
-              ? activeTrackSize
-              : inactiveTrackSize);
+    for (final valueRange in valueRanges) {
+      final v = trackbarBuilder(valueRange);
+      final Paint rangePaint = _paintFromColor(v.color!, v.size!);
 
       canvas.drawLine(
         Offset(valueRange.start, baseLine),
@@ -142,9 +107,9 @@ class _MultiSliderPainter extends CustomPainter {
 
     if (divisions != null) {
       final divisionsList = List<double>.generate(
-          divisions! + 1,
-          (index) =>
-              canvasStart + index * (canvasEnd - canvasStart) / divisions!);
+        divisions! + 1,
+        (index) => canvasStart + index * (canvasEnd - canvasStart) / divisions!,
+      );
 
       for (double x in divisionsList) {
         final valueRange = valueRanges.firstWhere(
@@ -154,9 +119,11 @@ class _MultiSliderPainter extends CustomPainter {
         canvas.drawCircle(
           Offset(x, baseLine),
           1,
-          _paintFromColor(valueRangePainterCallback(valueRange)
-              ? Colors.white.withOpacity(0.5)
-              : activeTrackColorPaint.color.withOpacity(0.5)),
+          _paintFromColor(
+            trackbarBuilder(valueRange).isActive
+                ? Colors.white.withOpacity(0.5)
+                : thumbColor.withOpacity(0.5),
+          ),
         );
       }
     }
@@ -168,22 +135,25 @@ class _MultiSliderPainter extends CustomPainter {
 
     for (int i = 0; i < positions.length; i++) {
       final isSelected = selectedInputIndex == i;
+      final thumbValue = ThumbValue(i, values[i], isSelected);
+      final thumbOptions = thumbBuilder(thumbValue);
       double x = divisions == null
           ? positions[i]
           : _getDiscreteValue(positions[i], canvasStart, canvasEnd, divisions!);
 
-      if (isSelected)
+      if (isSelected) {
         canvas.drawCircle(
           Offset(x, baseLine),
-          thumbRadius + 10,
-          bigCircleColorPaint,
+          thumbOptions.radius! + 10,
+          _paintFromColor(thumbOptions.color!.withOpacity(0.25)),
         );
+      }
 
       IndicatorOptions? f;
       if (selectedIndicator != null && isSelected) {
-        f = selectedIndicator!(values[i], i);
+        f = selectedIndicator!(thumbValue);
       } else if (indicator != null) {
-        f = indicator!(values[i], i);
+        f = indicator!(thumbValue);
       }
 
       if (f != null && f.draw) {
@@ -194,7 +164,7 @@ class _MultiSliderPainter extends CustomPainter {
             canvas,
             Offset(
               x - textPainter.width / 2,
-              baseLine - thumbRadius - textHeightOffset,
+              baseLine - thumbOptions.radius! - textHeightOffset,
             ),
           );
       }
@@ -202,9 +172,21 @@ class _MultiSliderPainter extends CustomPainter {
       // Draw thumb
       Path path = Path();
       path.addOval(
-          Rect.fromCircle(center: Offset(x, baseLine), radius: thumbRadius));
-      canvas.drawShadow(path, Colors.black, 3, true);
-      canvas.drawPath(path, thumbColorPaint);
+        Rect.fromCircle(
+          center: Offset(x, baseLine),
+          radius: thumbOptions.radius!,
+        ),
+      );
+      if (thumbOptions.elevation! > 0) {
+        canvas.drawShadow(path, Colors.black, thumbOptions.elevation!, true);
+      }
+      canvas.drawPath(
+        path,
+        _paintFromColor(
+          thumbOptions.color!,
+          activeTrackSize,
+        ),
+      );
     }
   }
 
