@@ -147,7 +147,7 @@ class _MultiSliderState extends State<MultiSlider> {
   Widget build(BuildContext context) {
     final bool isDisabled = widget.onChanged == null || widget.range == 0;
     final indicatorTextTheme = _theme.textTheme.labelMedium;
-    final selectedIndicatorTextTheme = _theme.textTheme.bodyText1;
+    final selectedIndicatorTextTheme = _theme.textTheme.bodyLarge;
 
     IndicatorBuilder? indicator, selectedIndicator;
     if (widget.indicator != null) {
