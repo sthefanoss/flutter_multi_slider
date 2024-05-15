@@ -131,11 +131,11 @@ class WeekDaySchedule extends StatelessWidget {
             onChanged: enabled ? onChanged : null,
             divisions: 48,
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 19.0, vertical: 0),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 19.0, vertical: 0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
+              children: [
                 Text('0h', style: chartTextFont),
                 Text('6h', style: chartTextFont),
                 Text('12h', style: chartTextFont),

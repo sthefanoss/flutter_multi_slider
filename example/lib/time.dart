@@ -27,36 +27,37 @@ class Time {
   int get inMinutes => hours * 60 + minutes;
 
   Time operator +(Time other) => Time.fromMinutes(
-        this.inMinutes + other.inMinutes,
+        inMinutes + other.inMinutes,
       );
 
   Time operator -(Time other) => Time.fromMinutes(
-        this.inMinutes - other.inMinutes,
+        inMinutes - other.inMinutes,
       );
 
-  Time operator -() => Time.fromMinutes(-this.inMinutes);
+  Time operator -() => Time.fromMinutes(-inMinutes);
 
   Time operator *(num factor) => Time.fromMinutes(
-        (this.inMinutes * factor).round(),
+        (inMinutes * factor).round(),
       );
 
   Time operator /(num factor) => Time.fromMinutes(
-        (this.inMinutes / factor).round(),
+        (inMinutes / factor).round(),
       );
 
+  @override
   bool operator ==(other) {
     if (other is Time) {
-      return this.minutes == other.minutes && //
-          this.hours == other.hours;
+      return minutes == other.minutes && //
+          hours == other.hours;
     }
     return false;
   }
 
   bool operator <(Time other) {
-    return this.hours < other.hours ||
-        (this.hours == other.hours && this.minutes < other.minutes);
+    return hours < other.hours || (hours == other.hours && minutes < other.minutes);
   }
 
+  @override
   String toString() {
     final hoursSegments = hours.toString().padLeft(2, '0');
     final minutesSegments = minutes.toString().padLeft(2, '0');

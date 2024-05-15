@@ -1,4 +1,4 @@
-part of flutter_multi_slider;
+part of '../flutter_multi_slider.dart';
 
 class _MultiSliderPainter extends CustomPainter {
   final List<double> values;
@@ -41,18 +41,17 @@ class _MultiSliderPainter extends CustomPainter {
     final canvasStart = horizontalPadding;
     final canvasEnd = size.width - horizontalPadding;
 
-    List<ValueRange> _makeRanges(
+    List<ValueRange> makeRanges(
       List<double> innerValues,
       double start,
       double end,
     ) {
       final values = <double>[
         start,
-        ...innerValues
-            .map<double>(divisions == null
+        ...innerValues //
+            .map<double>(divisions == null //
                 ? (v) => v
-                : (v) => _getDiscreteValue(v, start, end, divisions!))
-            .toList(),
+                : (v) => _getDiscreteValue(v, start, end, divisions!)),
         end
       ];
       return List<ValueRange>.generate(
@@ -69,7 +68,7 @@ class _MultiSliderPainter extends CustomPainter {
       );
     }
 
-    final valueRanges = _makeRanges(positions, canvasStart, canvasEnd);
+    final valueRanges = makeRanges(positions, canvasStart, canvasEnd);
     final fistDot = trackbarBuilder(valueRanges.first);
     final lastDot = trackbarBuilder(valueRanges.last);
     canvas.drawArc(
@@ -120,7 +119,7 @@ class _MultiSliderPainter extends CustomPainter {
           Offset(x, baseLine),
           1,
           _paintFromColor(
-            trackbarBuilder(valueRange).isActive
+            trackbarBuilder(valueRange).isActive //
                 ? Colors.white.withOpacity(0.5)
                 : thumbColor.withOpacity(0.5),
           ),
@@ -137,7 +136,7 @@ class _MultiSliderPainter extends CustomPainter {
       final isSelected = selectedInputIndex == i;
       final thumbValue = ThumbValue(i, values[i], isSelected);
       final thumbOptions = thumbBuilder(thumbValue);
-      double x = divisions == null
+      final x = divisions == null //
           ? positions[i]
           : _getDiscreteValue(positions[i], canvasStart, canvasEnd, divisions!);
 

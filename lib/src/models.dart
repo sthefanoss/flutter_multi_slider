@@ -1,4 +1,4 @@
-part of flutter_multi_slider;
+part of '../flutter_multi_slider.dart';
 
 /// Used in [TrackbarBuilder] as parameter.
 /// Every range between the edges of [MultiSlider] generate an [ValueRange].

@@ -1,4 +1,4 @@
-part of flutter_multi_slider;
+part of '../flutter_multi_slider.dart';
 
 class MultiSlider extends StatefulWidget {
   const MultiSlider({
@@ -114,7 +114,7 @@ class MultiSlider extends StatefulWidget {
   final ThumbBuilder thumbBuilder;
 
   static IndicatorOptions defaultIndicator(ThumbValue value) {
-    return IndicatorOptions();
+    return const IndicatorOptions();
   }
 
   static TrackbarOptions defaultTrackbarBuilder(ValueRange valueRange) {
@@ -122,11 +122,11 @@ class MultiSlider extends StatefulWidget {
   }
 
   static ThumbOptions defaultThumbBuilder(ThumbValue value) {
-    return ThumbOptions();
+    return const ThumbOptions();
   }
 
   @override
-  _MultiSliderState createState() => _MultiSliderState();
+  State<MultiSlider> createState() => _MultiSliderState();
 }
 
 class _MultiSliderState extends State<MultiSlider> {
@@ -170,18 +170,18 @@ class _MultiSliderState extends State<MultiSlider> {
         );
       };
     }
-    final enabledThumbColor = widget.thumbColor ??
+    final enabledThumbColor = widget.thumbColor ?? //
         widget.color ??
         _sliderTheme.activeTrackColor ??
         _theme.colorScheme.primary;
 
-    final disabledThumbColor = widget.thumbInactiveColor ??
+    final disabledThumbColor = widget.thumbInactiveColor ?? //
         widget.thumbColor ??
         _sliderTheme.activeTrackColor ??
         Colors.grey;
 
     final thumbColor = isDisabled ? disabledThumbColor : enabledThumbColor;
-    final enabledActiveTrackColor = widget.color ??
+    final enabledActiveTrackColor = widget.color ?? //
         _sliderTheme.activeTrackColor ??
         _theme.colorScheme.primary;
 
@@ -189,12 +189,11 @@ class _MultiSliderState extends State<MultiSlider> {
         _sliderTheme.inactiveTrackColor ??
         _theme.colorScheme.primary.withOpacity(0.24);
 
-    final disabledActiveTrackColor = _sliderTheme.disabledActiveTrackColor ??
+    final disabledActiveTrackColor = _sliderTheme.disabledActiveTrackColor ?? //
         _theme.colorScheme.onSurface.withOpacity(0.40);
 
-    final disabledInactiveTrackColor =
-        _sliderTheme.disabledInactiveTrackColor ??
-            _theme.colorScheme.onSurface.withOpacity(0.12);
+    final disabledInactiveTrackColor = _sliderTheme.disabledInactiveTrackColor ?? //
+        _theme.colorScheme.onSurface.withOpacity(0.12);
 
     final activeTrackColor = isDisabled //
         ? disabledActiveTrackColor
@@ -207,9 +206,9 @@ class _MultiSliderState extends State<MultiSlider> {
     TrackbarOptions trackbarBuilder(ValueRange v) {
       final currentValue = widget.trackbarBuilder.call(v);
       final isActive = currentValue.isActive;
-      Color color = currentValue.color ??
+      Color color = currentValue.color ?? //
           (isActive ? activeTrackColor : inactiveTrackColor);
-      final size = currentValue.size ??
+      final size = currentValue.size ?? //
           (isActive ? widget.activeTrackSize : widget.inactiveTrackSize);
 
       if (widget.rangeColors != null && v.index < widget.rangeColors!.length) {
@@ -237,6 +236,10 @@ class _MultiSliderState extends State<MultiSlider> {
       builder: (context, constraints) {
         _maxWidth = constraints.maxWidth;
         return GestureDetector(
+          onPanDown: isDisabled ? null : _onPanDown,
+          onPanUpdate: isDisabled ? null : _handleOnChanged,
+          onPanCancel: isDisabled ? null : _handleOnChangeEnd,
+          onPanEnd: isDisabled ? null : (_) => _handleOnChangeEnd(),
           child: Container(
             constraints: constraints,
             width: double.infinity,
@@ -263,10 +266,6 @@ class _MultiSliderState extends State<MultiSlider> {
               ),
             ),
           ),
-          onPanDown: isDisabled ? null : _onPanDown,
-          onPanUpdate: isDisabled ? null : _handleOnChanged,
-          onPanCancel: isDisabled ? null : _handleOnChangeEnd,
-          onPanEnd: isDisabled ? null : (_) => _handleOnChangeEnd(),
         );
       },
     );
@@ -297,14 +296,14 @@ class _MultiSliderState extends State<MultiSlider> {
   }
 
   double _convertValueToPixelPosition(double value) {
-    return (value - widget.min) *
+    return (value - widget.min) * //
             (_maxWidth - 2 * widget.horizontalPadding) /
             (widget.range) +
         widget.horizontalPadding;
   }
 
   double _convertPixelPositionToValue(double pixelPosition) {
-    final value = (pixelPosition - widget.horizontalPadding) *
+    final value = (pixelPosition - widget.horizontalPadding) * //
             (widget.range) /
             (_maxWidth - 2 * widget.horizontalPadding) +
         widget.min;
@@ -340,13 +339,13 @@ class _MultiSliderState extends State<MultiSlider> {
   }
 
   double _calculateInnerBound() {
-    return _selectedInputIndex == 0
+    return _selectedInputIndex == 0 //
         ? widget.min
         : widget.values[_selectedInputIndex! - 1];
   }
 
   double _calculateOuterBound() {
-    return _selectedInputIndex == widget.values.length - 1
+    return _selectedInputIndex == widget.values.length - 1 //
         ? widget.max
         : widget.values[_selectedInputIndex! + 1];
   }

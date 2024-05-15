@@ -1,4 +1,4 @@
-part of flutter_multi_slider;
+part of '../flutter_multi_slider.dart';
 
 typedef TrackbarBuilder = TrackbarOptions Function(ValueRange valueRange);
 
