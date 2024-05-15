@@ -1,3 +1,6 @@
+## [2.0.1] - Features
+- remove deprecated call for new flutter version
+
 ## [2.0.0] - Features
 - add indicators
 - add thumb builder
