@@ -1,4 +1,5 @@
 import 'package:example/pages/continous_or_discrete_page.dart';
+import 'package:example/pages/theme_data_test.dart';
 import 'package:example/pages/schedule_input_page.dart';
 import 'package:flutter/material.dart';
 
@@ -29,6 +30,11 @@ class HomePage extends StatelessWidget {
         title: 'Schedule Input',
         description: 'This example shows how to use the MultiSlider to input a schedule.',
         page: () => const SchedulePage(),
+      ),
+      PageItem(
+        title: 'Theme data test',
+        description: 'This example shows how to use the MultiSlider with a custom theme data.',
+        page: () => const ThemeDataTest(),
       ),
     ];
 
